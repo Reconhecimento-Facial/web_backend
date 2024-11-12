@@ -1,67 +1,104 @@
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy.orm import Mapped, registry
+from sqlalchemy import Column, ForeignKey, Table, func
+from sqlalchemy.orm import Mapped, mapped_column, registry, relationship
 
 table_registry = registry()
 
 
-class UserStatus(str, Enum):
-    active = 'ativo'
-    deactivated = 'desativado'
+users_groups = Table(
+    'users_groups',
+    table_registry.metadata,
+    Column('user_id', ForeignKey('users.id'), primary_key=True),
+    Column('group_id', ForeignKey('groups.id'), primary_key=True),
+)
+
+users_envs = Table(
+    'users_envs',
+    table_registry.metadata,
+    Column('user_id', ForeignKey('users.id'), primary_key=True),
+    Column('env_id', ForeignKey('envs.id'), primary_key=True),
+)
+
+groups_envs = Table(
+    'groups_envs',
+    table_registry.metadata,
+    Column('group_id', ForeignKey('groups.id'), primary_key=True),
+    Column('env_id', ForeignKey('envs.id'), primary_key=True),
+)
+
+
+class Userstatus(str, Enum):
+    active = 'active'
+    disabled = 'disabled'
 
 
 @table_registry.mapped_as_dataclass
 class User:
     __tablename__ = 'users'
 
-    id: Mapped[int]
-    name: Mapped[str]
-    email: Mapped[str]
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    status: Mapped[Userstatus]
+    username: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str]
-    created_at: Mapped[datetime]
+    email: Mapped[str] = mapped_column(unique=True)
+    created_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now(), onupdate=func.now()
+    )
+    groups: Mapped[list['Group']] = relationship(
+        init=False, secondary=users_groups, back_populates='users'
+    )
+    envs: Mapped[list['Enviroment']]  = relationship(
+        init=False, secondary=users_envs, back_populates='envs'
+    )
 
 
-# class TodoState(str, Enum):
-#     draft = 'draft'
-#     todo = 'todo'
-#     doing = 'doing'
-#     done = 'done'
-#     trash = 'trash'
+@table_registry.mapped_as_dataclass
+class Group:
+    __tablename__ = 'groups'
+
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    name: Mapped[str] = mapped_column(unique=True)
+    created_at: Mapped[datetime] = mapped_column(
+        init=False,
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        init=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+    users: Mapped[list[User]] = relationship(
+        init=False, secondary=users_groups, back_populates='groups'
+    )
+    envs: Mapped[list['Enviroment']] = relationship(
+        init=False, secondary=groups_envs, back_populates='envs'
+    )
 
 
-# @table_registry.mapped_as_dataclass
-# class User:
-#     __tablename__ = 'users'
+@table_registry.mapped_as_dataclass
+class Enviroment:
+    __tablename__ = 'envs'
 
-#     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-#     username: Mapped[str] = mapped_column(unique=True)
-#     password: Mapped[str]
-#     email: Mapped[str] = mapped_column(unique=True)
-#     created_at: Mapped[datetime] = mapped_column(
-#         init=False, server_default=func.now()
-#     )
-#     updated_at: Mapped[datetime] = mapped_column(
-#         init=False, server_default=func.now(), onupdate=func.now()
-#     )
-#     todos: Mapped[list['Todo']] = relationship(
-#         init=False, back_populates='user', cascade='all, delete-orphan'
-#     )
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    name: Mapped[str] = mapped_column(unique=True)
+    created_at: Mapped[datetime] = mapped_column(
+        init=False,
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        init=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+    users: Mapped[list[User]] = relationship(
+        init=False, secondary=users_envs, back_populates='users'
+    )
+    groups: Mapped[list[Group]] = relationship(
+        init=False, secondary=groups_envs, back_populates='groups'
+    )
 
-
-# @table_registry.mapped_as_dataclass
-# class Todo:
-#     __tablename__ = 'todos'
-
-#     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-#     title: Mapped[str]
-#     description: Mapped[str]
-#     state: Mapped[TodoState]
-#     created_at: Mapped[datetime] = mapped_column(
-#         init=False, server_default=func.now()
-#     )
-#     updated_at: Mapped[datetime] = mapped_column(
-#         init=False, server_default=func.now(), onupdate=func.now()
-#     )
-#     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-#     user: Mapped[User] = relationship(init=False, back_populates='todos')
