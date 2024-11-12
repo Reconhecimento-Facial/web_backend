@@ -52,7 +52,7 @@ class User:
     groups: Mapped[list['Group']] = relationship(
         init=False, secondary=users_groups, back_populates='users'
     )
-    envs: Mapped[list['Enviroment']]  = relationship(
+    envs: Mapped[list['Enviroment']] = relationship(
         init=False, secondary=users_envs, back_populates='envs'
     )
 
@@ -63,6 +63,7 @@ class Group:
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
+    description: Mapped[str] = mapped_column(init=False)
     created_at: Mapped[datetime] = mapped_column(
         init=False,
         server_default=func.now(),
@@ -101,4 +102,3 @@ class Enviroment:
     groups: Mapped[list[Group]] = relationship(
         init=False, secondary=groups_envs, back_populates='groups'
     )
-
