@@ -28,48 +28,53 @@ def upgrade() -> None:
         sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
         sa.Column('updated_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), onupdate=sa.text('(CURRENT_TIMESTAMP)'),nullable=False),
         sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('name'),
+    )
+    op.create_table(
+        'groups',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('name', sa.String(), nullable=False),
+        sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+        sa.Column('updated_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), onupdate=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('name')
     )
-    op.create_table('groups',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('name')
+    op.create_table(
+        'users',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('status', sa.Enum('active', 'disabled', name='userstatus'), nullable=False),
+        sa.Column('username', sa.String(), nullable=False),
+        sa.Column('password', sa.String(), nullable=False),
+        sa.Column('email', sa.String(), nullable=False),
+        sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+        sa.Column('updated_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), onupdate=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('email'),
+        sa.UniqueConstraint('username')
     )
-    op.create_table('users',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('status', sa.Enum('active', 'disabled', name='userstatus'), nullable=False),
-    sa.Column('username', sa.String(), nullable=False),
-    sa.Column('password', sa.String(), nullable=False),
-    sa.Column('email', sa.String(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email'),
-    sa.UniqueConstraint('username')
+    op.create_table(
+        'groups_envs',
+        sa.Column('group_id', sa.Integer(), nullable=False),
+        sa.Column('env_id', sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(['env_id'], ['envs.id'], ),
+        sa.ForeignKeyConstraint(['group_id'], ['groups.id'], ),
+        sa.PrimaryKeyConstraint('group_id', 'env_id')
     )
-    op.create_table('groups_envs',
-    sa.Column('group_id', sa.Integer(), nullable=False),
-    sa.Column('env_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['env_id'], ['envs.id'], ),
-    sa.ForeignKeyConstraint(['group_id'], ['groups.id'], ),
-    sa.PrimaryKeyConstraint('group_id', 'env_id')
+    op.create_table(
+        'users_envs',
+        sa.Column('user_id', sa.Integer(), nullable=False),
+        sa.Column('env_id', sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(['env_id'], ['envs.id'], ),
+        sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+        sa.PrimaryKeyConstraint('user_id', 'env_id')
     )
-    op.create_table('users_envs',
-    sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('env_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['env_id'], ['envs.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('user_id', 'env_id')
-    )
-    op.create_table('users_groups',
-    sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('group_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['group_id'], ['groups.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('user_id', 'group_id')
+    op.create_table(
+        'users_groups',
+        sa.Column('user_id', sa.Integer(), nullable=False),
+        sa.Column('group_id', sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(['group_id'], ['groups.id'], ),
+        sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+        sa.PrimaryKeyConstraint('user_id', 'group_id')
     )
     # ### end Alembic commands ###
 
@@ -82,4 +87,5 @@ def downgrade() -> None:
     op.drop_table('users')
     op.drop_table('groups')
     op.drop_table('envs')
+    op.execute('DROP TYPE userstatus')
     # ### end Alembic commands ###
