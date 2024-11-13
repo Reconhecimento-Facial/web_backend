@@ -39,10 +39,12 @@ class User:
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    status: Mapped[UserStatus]
     username: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str]
     email: Mapped[str] = mapped_column(unique=True)
+    status: Mapped[UserStatus] = mapped_column(
+        init=False, default=UserStatus.disabled
+    )
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )

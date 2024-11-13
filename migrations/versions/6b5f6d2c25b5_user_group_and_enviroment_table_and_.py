@@ -7,6 +7,8 @@ Create Date: 2024-11-13 03:10:18.937728
 """
 from typing import Sequence, Union
 
+from web_backend.models import UserStatus
+
 from alembic import op
 import sqlalchemy as sa
 
@@ -43,10 +45,15 @@ def upgrade() -> None:
     op.create_table(
         'users',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('status', sa.Enum('active', 'disabled', name='user_status'), nullable=False),
         sa.Column('username', sa.String(), nullable=False),
         sa.Column('password', sa.String(), nullable=False),
         sa.Column('email', sa.String(), nullable=False),
+        sa.Column(
+            'status', 
+            sa.Enum('active', 'disabled', name='user_status'), 
+            nullable=False,
+            default=UserStatus.disabled
+        ),
         sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
         sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
         sa.PrimaryKeyConstraint('id'),
