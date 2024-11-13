@@ -29,7 +29,7 @@ groups_envs = Table(
 )
 
 
-class Userstatus(str, Enum):
+class UserStatus(str, Enum):
     active = 'active'
     disabled = 'disabled'
 
@@ -39,7 +39,7 @@ class User:
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    status: Mapped[Userstatus]
+    status: Mapped[UserStatus]
     username: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str]
     email: Mapped[str] = mapped_column(unique=True)
@@ -53,7 +53,7 @@ class User:
         init=False, secondary=users_groups, back_populates='users'
     )
     envs: Mapped[list['Enviroment']] = relationship(
-        init=False, secondary=users_envs, back_populates='envs'
+        init=False, secondary=users_envs, back_populates='users'
     )
 
 
@@ -63,7 +63,7 @@ class Group:
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
-    description: Mapped[str] = mapped_column(init=False)
+    description: Mapped[str] = mapped_column(init=False, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         init=False,
         server_default=func.now(),
@@ -77,7 +77,7 @@ class Group:
         init=False, secondary=users_groups, back_populates='groups'
     )
     envs: Mapped[list['Enviroment']] = relationship(
-        init=False, secondary=groups_envs, back_populates='envs'
+        init=False, secondary=groups_envs, back_populates='groups'
     )
 
 
@@ -87,6 +87,7 @@ class Enviroment:
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
+    description: Mapped[str] = mapped_column(init=False, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         init=False,
         server_default=func.now(),
@@ -97,8 +98,8 @@ class Enviroment:
         onupdate=func.now(),
     )
     users: Mapped[list[User]] = relationship(
-        init=False, secondary=users_envs, back_populates='users'
+        init=False, secondary=users_envs, back_populates='envs'
     )
     groups: Mapped[list[Group]] = relationship(
-        init=False, secondary=groups_envs, back_populates='groups'
+        init=False, secondary=groups_envs, back_populates='envs'
     )

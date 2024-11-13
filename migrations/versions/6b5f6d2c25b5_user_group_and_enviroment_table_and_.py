@@ -1,8 +1,8 @@
 """user, group and enviroment table and relationships between them.
 
-Revision ID: 08449193f44b
+Revision ID: 6b5f6d2c25b5
 Revises: 
-Create Date: 2024-11-12 19:24:13.451276
+Create Date: 2024-11-13 03:10:18.937728
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '08449193f44b'
+revision: str = '6b5f6d2c25b5'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,14 +26,15 @@ def upgrade() -> None:
         sa.Column('name', sa.String(), nullable=False),
         sa.Column('description', sa.String(), nullable=True),
         sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), onupdate=sa.text('(CURRENT_TIMESTAMP)'),nullable=False),
+        sa.Column('updated_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), onupdate=sa.text('(CUURENT_TIMESTAMP)'), nullable=False),
         sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('name'),
+        sa.UniqueConstraint('name')
     )
     op.create_table(
         'groups',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('name', sa.String(), nullable=False),
+        sa.Column('description', sa.String(), nullable=True),
         sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
         sa.Column('updated_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), onupdate=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
         sa.PrimaryKeyConstraint('id'),
@@ -42,12 +43,12 @@ def upgrade() -> None:
     op.create_table(
         'users',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('status', sa.Enum('active', 'disabled', name='userstatus'), nullable=False),
+        sa.Column('status', sa.Enum('active', 'disabled', name='user_status'), nullable=False),
         sa.Column('username', sa.String(), nullable=False),
         sa.Column('password', sa.String(), nullable=False),
         sa.Column('email', sa.String(), nullable=False),
-        sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), onupdate=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+        sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+        sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('email'),
         sa.UniqueConstraint('username')
@@ -87,5 +88,5 @@ def downgrade() -> None:
     op.drop_table('users')
     op.drop_table('groups')
     op.drop_table('envs')
-    op.execute('DROP TYPE userstatus')
+    op.execute('DROP TYPE user_status')
     # ### end Alembic commands ###
