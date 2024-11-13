@@ -9,6 +9,7 @@ from web_backend.models import User
 from web_backend.schemas import (
     UserPublicSchema,
     UserSchema,
+    UsersListSchema,
 )
 
 router = APIRouter(prefix='/users', tags=['users'])
@@ -53,3 +54,9 @@ def create_user(user: UserSchema, session: Session = Depends(get_session)):
     session.refresh(db_user)
 
     return db_user
+
+
+@router.get('/', status_code=HTTPStatus.OK, response_model=UsersListSchema)
+def read_users(session: Session = Depends(get_session), skip: int = 0, limit: int = 100):
+    users = session.scalars(select(User).offset(skip).limit(limit)).all()
+    return {'users': users}
