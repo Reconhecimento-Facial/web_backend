@@ -17,8 +17,10 @@ services:
 
   facial_web_backend:
     image: facial_web_backend
+    volumes:
+      - .:/app
     entrypoint: ./entrypoint.sh
-    build: .
+    build: . 
     ports:
       - "8000:8000"
     depends_on:
