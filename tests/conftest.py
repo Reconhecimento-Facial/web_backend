@@ -7,12 +7,20 @@ from sqlalchemy.orm import Session
 from testcontainers.postgres import PostgresContainer
 
 from web_backend.app import app
-from web_backend.models import table_registry
+from web_backend.database import get_session
+from web_backend.models import User, table_registry
 
 
 @pytest.fixture
-def client():
-    return TestClient(app)
+def client(session: Session) -> Generator[TestClient, None, None]:
+    def get_session_test():
+        return session
+
+    with TestClient(app) as client:
+        app.dependency_overrides[get_session] = get_session_test
+        yield client
+
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture(scope='session')
@@ -33,3 +41,18 @@ def session(engine) -> Generator[Session, None, None]:
         session.rollback()
 
     table_registry.metadata.drop_all(engine)
+
+
+@pytest.fixture
+def user(session: Session) -> User:
+    user = User(
+        username='fixture_user',
+        email='fixture_user@test.com',
+        password='fixture_user',
+    )
+
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    return user
