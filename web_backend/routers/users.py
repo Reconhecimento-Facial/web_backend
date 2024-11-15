@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -7,9 +8,14 @@ from sqlalchemy.orm import Session
 from web_backend.database import get_session
 from web_backend.models import User
 from web_backend.schemas import (
+    MessageSchema,
     UserPublicSchema,
     UserSchema,
     UsersListSchema,
+)
+from web_backend.security import (
+    get_current_user,
+    get_password_hash,
 )
 
 router = APIRouter(prefix='/users', tags=['users'])
@@ -20,7 +26,9 @@ router = APIRouter(prefix='/users', tags=['users'])
     status_code=HTTPStatus.CREATED,
     response_model=UserPublicSchema,
 )
-def create_user(user: UserSchema, session: Session = Depends(get_session)):
+def create_user(
+    user: UserSchema, session: Annotated[Session, Depends(get_session)]
+) -> UserPublicSchema:
     db_user = session.scalar(
         select(User).where(
             (User.username == user.username) | (User.email == user.email)
@@ -45,7 +53,7 @@ def create_user(user: UserSchema, session: Session = Depends(get_session)):
 
     db_user = User(
         username=user.username,
-        password=user.password,
+        password=get_password_hash(user.password),
         email=user.email,
     )
 
@@ -56,7 +64,32 @@ def create_user(user: UserSchema, session: Session = Depends(get_session)):
     return db_user
 
 
+@router.delete(
+    '/{user_id}',
+    status_code=HTTPStatus.OK,
+    response_model=MessageSchema,
+)
+def delete_user(
+    user_id: int,
+    session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> MessageSchema:
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail='Not enough permissions',
+        )
+
+    session.delete(current_user)
+    session.commit()
+    return {'message': 'User deleted successfully'}
+
+
 @router.get('/', status_code=HTTPStatus.OK, response_model=UsersListSchema)
-def read_users(session: Session = Depends(get_session), skip: int = 0, limit: int = 100):
+def read_users(
+    session: Annotated[Session, Depends(get_session)],
+    skip: int = 0,
+    limit: int = 100,
+) -> UsersListSchema:
     users = session.scalars(select(User).offset(skip).limit(limit)).all()
     return {'users': users}
