@@ -69,3 +69,31 @@ def test_create_user_username_and_email_already_exist(client, user):
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json() == {'detail': 'Username and email already exists'}
+
+
+def test_delete_user(client, user, token):
+    response = client.delete(
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'message': 'User deleted successfully'}
+
+
+def test_delete_user_forbidden(client, other_user, token):
+    response = client.delete(
+        f'/users/{other_user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
+
+
+def test_read_users(client, user):
+    user_public = UserPublicSchema.model_validate(user).model_dump()
+    response = client.get('/users/')
+
+    assert response.status_code == HTTPStatus.OK
+    user_public['created_at'] = user_public['created_at'].isoformat()
+    user_public['updated_at'] = user_public['updated_at'].isoformat()
+    assert response.json() == {'users': [user_public]}

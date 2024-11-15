@@ -9,6 +9,7 @@ from testcontainers.postgres import PostgresContainer
 from web_backend.app import app
 from web_backend.database import get_session
 from web_backend.models import User, table_registry
+from web_backend.security import get_password_hash
 
 
 @pytest.fixture
@@ -45,14 +46,44 @@ def session(engine) -> Generator[Session, None, None]:
 
 @pytest.fixture
 def user(session: Session) -> User:
+    txt = 'fixture_user'
     user = User(
-        username='fixture_user',
-        email='fixture_user@test.com',
-        password='fixture_user',
+        username=txt,
+        email=txt + '@test.com',
+        password=get_password_hash(txt),
     )
 
     session.add(user)
     session.commit()
     session.refresh(user)
+
+    user.clean_password = txt
+
+    return user
+
+
+@pytest.fixture
+def token(client, user: User) -> str:
+    response = client.post(
+        '/auth/token',
+        data={'username': user.email, 'password': user.clean_password},
+    )
+
+    return response.json()['access_token']
+
+
+@pytest.fixture
+def other_user(session: Session) -> User:
+    txt = 'fixture_other_user'
+
+    user = User(
+        username=txt, email=txt + '@test.com', password=get_password_hash(txt)
+    )
+
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    user.clean_password = txt
 
     return user
