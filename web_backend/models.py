@@ -7,17 +7,17 @@ from sqlalchemy.orm import Mapped, mapped_column, registry, relationship
 table_registry = registry()
 
 
-users_groups = Table(
-    'users_groups',
+workers_groups = Table(
+    'workers_groups',
     table_registry.metadata,
-    Column('user_id', ForeignKey('users.id'), primary_key=True),
+    Column('worker_id', ForeignKey('workers.id'), primary_key=True),
     Column('group_id', ForeignKey('groups.id'), primary_key=True),
 )
 
-users_envs = Table(
-    'users_envs',
+workers_envs = Table(
+    'workers_envs',
     table_registry.metadata,
-    Column('user_id', ForeignKey('users.id'), primary_key=True),
+    Column('worker_id', ForeignKey('workers.id'), primary_key=True),
     Column('env_id', ForeignKey('envs.id'), primary_key=True),
 )
 
@@ -29,21 +29,20 @@ groups_envs = Table(
 )
 
 
-class UserStatus(str, Enum):
+class WorkerStatus(str, Enum):
     active = 'active'
     disabled = 'disabled'
 
 
 @table_registry.mapped_as_dataclass
-class User:
-    __tablename__ = 'users'
+class Worker:
+    __tablename__ = 'workers'
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    username: Mapped[str] = mapped_column(unique=True)
-    password: Mapped[str]
+    name: Mapped[str] = mapped_column(unique=True)
     email: Mapped[str] = mapped_column(unique=True)
-    status: Mapped[UserStatus] = mapped_column(
-        init=False, default=UserStatus.disabled
+    status: Mapped[WorkerStatus] = mapped_column(
+        init=False, default=WorkerStatus.disabled
     )
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
@@ -51,11 +50,12 @@ class User:
     updated_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now(), onupdate=func.now()
     )
+    
     groups: Mapped[list['Group']] = relationship(
-        init=False, secondary=users_groups, back_populates='users'
+        init=False, secondary=workers_groups, back_populates='workers'
     )
     envs: Mapped[list['Enviroment']] = relationship(
-        init=False, secondary=users_envs, back_populates='users'
+        init=False, secondary=workers_envs, back_populates='workers'
     )
 
 
@@ -75,8 +75,8 @@ class Group:
         server_default=func.now(),
         onupdate=func.now(),
     )
-    users: Mapped[list[User]] = relationship(
-        init=False, secondary=users_groups, back_populates='groups'
+    workers: Mapped[list['Worker']] = relationship(
+        init=False, secondary=workers_groups, back_populates='groups'
     )
     envs: Mapped[list['Enviroment']] = relationship(
         init=False, secondary=groups_envs, back_populates='groups'
@@ -99,8 +99,8 @@ class Enviroment:
         server_default=func.now(),
         onupdate=func.now(),
     )
-    users: Mapped[list[User]] = relationship(
-        init=False, secondary=users_envs, back_populates='envs'
+    workers: Mapped[list['Worker']] = relationship(
+        init=False, secondary=workers_envs, back_populates='envs'
     )
     groups: Mapped[list[Group]] = relationship(
         init=False, secondary=groups_envs, back_populates='envs'

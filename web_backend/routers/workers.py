@@ -9,26 +9,26 @@ from web_backend.database import get_session
 from web_backend.models import User
 from web_backend.schemas import (
     MessageSchema,
-    UserPublicSchema,
-    UserSchema,
-    UsersListSchema,
+    WorkerPublicSchema,
+    WorkerSchema,
+    WorkersListSchema,
 )
 from web_backend.security import (
     get_current_user,
     get_password_hash,
 )
 
-router = APIRouter(prefix='/users', tags=['users'])
+router = APIRouter(prefix='/workers', tags=['workers'])
 
 
 @router.post(
     '/',
     status_code=HTTPStatus.CREATED,
-    response_model=UserPublicSchema,
+    response_model=WorkerPublicSchema,
 )
 def create_user(
-    user: UserSchema, session: Annotated[Session, Depends(get_session)]
-) -> UserPublicSchema:
+    user: WorkerSchema, session: Annotated[Session, Depends(get_session)]
+) -> WorkerPublicSchema:
     db_user = session.scalar(
         select(User).where(
             (User.username == user.username) | (User.email == user.email)
@@ -85,12 +85,12 @@ def delete_user(
     return {'message': 'User deleted successfully'}
 
 
-@router.get('/', status_code=HTTPStatus.OK, response_model=UsersListSchema)
+@router.get('/', status_code=HTTPStatus.OK, response_model=WorkersListSchema)
 def read_users(
     session: Annotated[Session, Depends(get_session)],
     skip: int = 0,
     limit: int = 100,
-) -> UsersListSchema:
+) -> WorkersListSchema:
     users = session.scalars(select(User).offset(skip).limit(limit)).all()
     return {'users': users}
 
@@ -98,14 +98,14 @@ def read_users(
 @router.put(
     '/{user_id}',
     status_code=HTTPStatus.OK,
-    response_model=UserPublicSchema,
+    response_model=WorkerPublicSchema,
 )
 def update_user(
     user_id: int,
-    upd_user: UserSchema,
+    upd_user: WorkerSchema,
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Depends(get_current_user)],
-) -> UserPublicSchema:
+) -> WorkerPublicSchema:
     if current_user.id != user_id:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
