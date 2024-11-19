@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from web_backend.models import UserStatus
 
@@ -13,6 +13,8 @@ class UserSchema(BaseModel):
     username: str
     email: EmailStr
     password: str
+    status: UserStatus = Field(default=UserStatus.disabled)
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserPublicSchema(BaseModel):
