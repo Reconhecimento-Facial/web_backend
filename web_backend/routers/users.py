@@ -93,3 +93,31 @@ def read_users(
 ) -> UsersListSchema:
     users = session.scalars(select(User).offset(skip).limit(limit)).all()
     return {'users': users}
+
+
+@router.put(
+    '/{user_id}',
+    status_code=HTTPStatus.OK,
+    response_model=UserPublicSchema,
+)
+def update_user(
+    user_id: int,
+    upd_user: UserSchema,
+    session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> UserPublicSchema:
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail='Not enough permissions',
+        )
+
+    current_user.username = upd_user.username
+    current_user.email = upd_user.email
+    current_user.password = get_password_hash(upd_user.password)
+    current_user.status = upd_user.status
+
+    session.commit()
+    session.refresh(current_user)
+
+    return current_user
