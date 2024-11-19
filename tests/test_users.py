@@ -97,3 +97,37 @@ def test_read_users(client, user):
     user_public['created_at'] = user_public['created_at'].isoformat()
     user_public['updated_at'] = user_public['updated_at'].isoformat()
     assert response.json() == {'users': [user_public]}
+
+
+def test_update_user(client, user, token):
+    update_data = {
+        'username': 'updated_username',
+        'email': 'updated_email@example.com',
+        'password': 'new_password',
+        'status': 'active',
+    }
+
+    response = client.put(
+        f'/users/{user.id}',
+        json=update_data,
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    updated_user = response.json()
+    assert updated_user['username'] == update_data['username']
+    assert updated_user['email'] == update_data['email']
+
+
+def test_update_user_forbidden(client, other_user, token):
+    response = client.put(
+        f'/users/{other_user.id}',
+        json={
+            'username': 'teste_com_put',
+            'email': 'teste_put@put.com',
+            'password': 'teste_senha_put',
+        },
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
