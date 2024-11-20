@@ -27,7 +27,9 @@ def login_for_access_token(
     session: Annotated[Session, Depends(get_session)],
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ):
-    user = session.scalar(select(Worker).where(Worker.email == form_data.username))
+    user = session.scalar(
+        select(Worker).where(Worker.email == form_data.username)
+    )
 
     if not user:
         raise HTTPException(

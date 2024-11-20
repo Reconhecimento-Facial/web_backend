@@ -50,7 +50,7 @@ class Worker:
     updated_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now(), onupdate=func.now()
     )
-    
+
     groups: Mapped[list['Group']] = relationship(
         init=False, secondary=workers_groups, back_populates='workers'
     )
