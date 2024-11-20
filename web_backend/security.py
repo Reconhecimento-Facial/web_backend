@@ -10,8 +10,8 @@ from sqlalchemy import select
 from zoneinfo import ZoneInfo
 
 from web_backend.database import Session, get_session
-from web_backend.models import User
-from web_backend.schemas import TokenDataSchema
+# from web_backend.models import User
+from web_backend.schemas import Message
 from web_backend.settings import Settings
 
 settings = Settings()
@@ -45,7 +45,7 @@ def create_access_token(
 def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     session: Annotated[Session, Depends(get_session)],
-) -> User:
+) -> Message:
     credentials_exception = HTTPException(
         status_code=HTTPStatus.UNAUTHORIZED,
         detail='Could not validate credentials',
@@ -59,7 +59,7 @@ def get_current_user(
         username: str = payload.get('sub')
         if not username:
             raise credentials_exception
-        token_data = TokenDataSchema(username=username)
+        # token_data = TokenDataSchema(username=username)
 
     except ExpiredSignatureError:
         raise credentials_exception
@@ -67,11 +67,11 @@ def get_current_user(
     except DecodeError:
         raise credentials_exception
 
-    user = session.scalar(
-        select(User).where(User.email == token_data.username)
-    )
+    # user = session.scalar(
+    #     select(User).where(User.email == token_data.username)
+    # )
 
-    if not user:
-        raise credentials_exception
+    # if not user:
+    #     raise credentials_exception
 
-    return user
+    return {'message': 'nada ainda'}
