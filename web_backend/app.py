@@ -6,7 +6,6 @@ from web_backend.routers import admin, auth
 from web_backend.schemas import Message
 
 app = FastAPI()
-# app.include_router(workers.router)
 app.include_router(auth.router)
 app.include_router(admin.router)
 

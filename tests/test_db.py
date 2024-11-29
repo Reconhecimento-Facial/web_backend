@@ -1,45 +1,23 @@
 from sqlalchemy import select
 
-from web_backend.models import (
-    Enviroment,
-    Group,
-    User,
-    UserStatus,
-)
+from web_backend.models import Admin
+from web_backend.security import get_password_hash, verify_password
 
 
-def test_create_user(session):
-    new_user = User(
-        username='alice',
-        password='secret',
-        email='teste@test',
+def test_create_admin(session):
+    new_admin = Admin(
+        email='teste@example.com',
+        password=get_password_hash('teste'),
     )
-    session.add(new_user)
+
+    session.add(new_admin)
     session.commit()
 
-    user = session.scalar(select(User).where(User.username == 'alice'))
-
-    assert user.username == 'alice'
-    assert user.status == UserStatus.disabled
-    assert user.email == 'teste@test'
-    assert user.password == 'secret'
-
-
-def test_create_group(session):
-    new_group = Group(name='Professores')
-    session.add(new_group)
-    session.commit()
-
-    group = session.scalar(select(Group).where(Group.name == 'Professores'))
-
-    assert group.name == 'Professores'
-
-
-def test_create_env(session):
-    new_env = Enviroment(name='lab_3')
-    session.add(new_env)
-    session.commit()
-
-    env = session.scalar(select(Enviroment).where(Enviroment.name == 'lab_3'))
-
-    assert env.name == 'lab_3'
+    admin = session.scalar(
+        select(Admin).where(Admin.email == 'teste@example.com')
+    )
+    
+    assert admin is not None    
+    assert admin.email == 'teste@example.com'
+    assert verify_password('teste', admin.password) == True
+    assert admin.super_admin == False
