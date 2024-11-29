@@ -1,14 +1,15 @@
-import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 from typing import Generator
 
+import pytest
 from fastapi.testclient import TestClient
-from web_backend.models import table_registry
-from web_backend.database import get_session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 from testcontainers.postgres import PostgresContainer
 
 from web_backend.app import app
+from web_backend.database import get_session
+from web_backend.models import table_registry
+
 
 @pytest.fixture(scope='session')
 def engine() -> Generator:

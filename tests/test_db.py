@@ -16,8 +16,8 @@ def test_create_admin(session):
     admin = session.scalar(
         select(Admin).where(Admin.email == 'teste@example.com')
     )
-    
-    assert admin is not None    
+
+    assert admin is not None
     assert admin.email == 'teste@example.com'
-    assert verify_password('teste', admin.password) == True
-    assert admin.super_admin == False
+    assert verify_password('teste', admin.password)
+    assert not admin.super_admin

@@ -24,7 +24,6 @@ def login_for_admin_token(
     session: Annotated[Session, Depends(get_session)],
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ):
-    ...
     admin = session.scalar(
         select(Admin).where(Admin.email == form_data.username)
     )
