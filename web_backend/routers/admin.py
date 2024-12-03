@@ -7,7 +7,12 @@ from sqlalchemy.orm import Session
 
 from web_backend.database import get_session
 from web_backend.models import Admin
-from web_backend.schemas import Admins, AdminSchema, Message, HTTPExceptionResponse
+from web_backend.schemas import (
+    Admins,
+    AdminSchema,
+    HTTPExceptionResponse,
+    Message,
+)
 from web_backend.security import get_current_admin, get_password_hash
 
 router = APIRouter(prefix='/admins', tags=['admins'])
@@ -46,13 +51,11 @@ def create_admin(
 
 
 @router.get(
-        '/', 
-        status_code=HTTPStatus.OK, 
-        response_model=Admins, 
-        responses={
-            HTTPStatus.FORBIDDEN: {'model': HTTPExceptionResponse}
-        }
-    )
+    '/',
+    status_code=HTTPStatus.OK,
+    response_model=Admins,
+    responses={HTTPStatus.FORBIDDEN: {'model': HTTPExceptionResponse}},
+)
 def get_admins(
     session: Annotated[Session, Depends(get_session)],
     current_admin: Annotated[Admin, Depends(get_current_admin)],
@@ -63,3 +66,25 @@ def get_admins(
         )
     admins = session.scalars(select(Admin)).all()
     return {'admins': admins}
+
+
+@router.delete(
+    '/{admin_id}',
+    status_code=HTTPStatus.OK,
+    response_model=Message,
+    responses={HTTPStatus.FORBIDDEN: {'model': HTTPExceptionResponse}},
+)
+def delete_admin(
+    admin_id: int,
+    session: Annotated[Session, Depends(get_session)],
+    current_admin: Annotated[Admin, Depends(get_current_admin)],
+) -> Message:
+    if not current_admin.super_admin:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN, detail='Not enough permission'
+        )
+
+    session.delete(current_admin)
+    session.commit()
+
+    return {'message': 'Admin deleted successfully'}
