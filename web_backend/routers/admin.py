@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from web_backend.database import get_session
 from web_backend.models import Admin
-from web_backend.schemas import Admins, AdminSchema, Message
+from web_backend.schemas import Admins, AdminSchema, Message, HTTPExceptionResponse
 from web_backend.security import get_current_admin, get_password_hash
 
 router = APIRouter(prefix='/admins', tags=['admins'])
@@ -45,7 +45,14 @@ def create_admin(
     return {'message': 'Admin created succesfully!'}
 
 
-@router.get('/', status_code=HTTPStatus.OK, response_model=Admins)
+@router.get(
+        '/', 
+        status_code=HTTPStatus.OK, 
+        response_model=Admins, 
+        responses={
+            HTTPStatus.FORBIDDEN: {'model': HTTPExceptionResponse}
+        }
+    )
 def get_admins(
     session: Annotated[Session, Depends(get_session)],
     current_admin: Annotated[Admin, Depends(get_current_admin)],

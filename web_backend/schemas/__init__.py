@@ -1,5 +1,5 @@
 from .admin import AdminPublicSchema, Admins, AdminSchema
-from .message import Message
+from .message import Message, HTTPExceptionResponse
 from .token import Token, TokenData
 
 __all__ = [
@@ -7,6 +7,7 @@ __all__ = [
     'AdminPublicSchema',
     'Admins',
     'Message',
+    'HTTPExceptionResponse',
     'Token',
     'TokenData',
 ]
