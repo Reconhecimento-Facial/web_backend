@@ -7,12 +7,18 @@ class AdminSchema(BaseModel):
     super_admin: bool
 
 
-class AdminPublicSchema(AdminSchema):
+class AdminDB(AdminSchema):
     id: int
+
+
+class AdminPublic(BaseModel):
+    id: int
+    email: EmailStr
+    super_admin: bool
 
     class Config:
         from_attributes = True
 
 
 class Admins(BaseModel):
-    admins: list[AdminPublicSchema]
+    admins: list[AdminPublic]

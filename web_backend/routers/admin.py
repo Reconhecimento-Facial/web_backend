@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from web_backend.database import get_session
 from web_backend.models import Admin
 from web_backend.schemas import (
+    AdminPublic,
     Admins,
     AdminSchema,
     HTTPExceptionResponse,
@@ -18,7 +19,9 @@ from web_backend.security import get_current_admin, get_password_hash
 router = APIRouter(prefix='/admins', tags=['admins'])
 
 
-@router.post(path='/', status_code=HTTPStatus.CREATED, response_model=Message)
+@router.post(
+    path='/', status_code=HTTPStatus.CREATED, response_model=AdminPublic
+)
 def create_admin(
     admin: AdminSchema,
     session: Annotated[Session, Depends(get_session)],
@@ -46,8 +49,9 @@ def create_admin(
 
     session.add(admin_db)
     session.commit()
+    session.refresh(admin_db)
 
-    return {'message': 'Admin created succesfully!'}
+    return admin_db
 
 
 @router.get(
@@ -84,7 +88,14 @@ def delete_admin(
             status_code=HTTPStatus.FORBIDDEN, detail='Not enough permission'
         )
 
-    session.delete(current_admin)
+    admin_db = session.scalar(select(Admin).where(Admin.id == admin_id))
+
+    if not admin_id:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='Admin not found'
+        )
+
+    session.delete(admin_db)
     session.commit()
 
     return {'message': 'Admin deleted successfully'}

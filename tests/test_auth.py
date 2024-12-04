@@ -14,11 +14,11 @@ def test_login_for_acces_token_does_not_exist(client):
     assert response.json() == {'detail': 'Incorrect email or password'}
 
 
-def test_login_for_access_token_incorrect_password(client, user):
+def test_login_for_access_token_incorrect_password(client, admin):
     response = client.post(
         url='/auth/token',
         data={
-            'username': user.email,
+            'username': admin.email,
             'password': 'incorrect_password',
         },
     )

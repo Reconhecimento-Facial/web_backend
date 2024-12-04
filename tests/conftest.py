@@ -8,7 +8,8 @@ from testcontainers.postgres import PostgresContainer
 
 from web_backend.app import app
 from web_backend.database import get_session
-from web_backend.models import table_registry
+from web_backend.models import Admin, table_registry
+from web_backend.security import get_password_hash
 
 
 @pytest.fixture(scope='session')
@@ -41,3 +42,49 @@ def client(session: Session) -> Generator[TestClient, None, None]:
         yield client
 
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def admin(session: Session) -> Generator[Admin, None, None]:
+    admin = Admin(
+        email='admin_teste@example.com',
+        password=get_password_hash('admin_teste1234'),
+        super_admin=False,
+    )
+
+    session.add(admin)
+    session.commit()
+    session.refresh(admin)
+
+    return admin
+
+
+@pytest.fixture
+def super_admin(session: Session) -> Generator[Admin, None, None]:
+    password = 'admin_teste1234'
+    super_admin = Admin(
+        email='admin_teste@example.com',
+        password=get_password_hash(password),
+        super_admin=True,
+    )
+
+    session.add(super_admin)
+    session.commit()
+    session.refresh(super_admin)
+
+    super_admin.clean_password = password
+
+    return super_admin
+
+
+@pytest.fixture
+def token(client, super_admin: Admin) -> str:
+    response = client.post(
+        '/auth/token',
+        data={
+            'username': super_admin.email,
+            'password': super_admin.clean_password,
+        },
+    )
+
+    return response.json()['access_token']
