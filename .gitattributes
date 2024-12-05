@@ -1,5 +1,0 @@
-# Definir fim de linha LF para todos os arquivos de shell script
-*.sh text eol=lf
-
-# Definir fim de linha LF para arquivos Dockerfile
-Dockerfile text eol=lf
