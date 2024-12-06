@@ -2,13 +2,14 @@ from http import HTTPStatus
 
 from fastapi import FastAPI
 
-from web_backend.routers import users
-from web_backend.schemas import MessageSchema
+from web_backend.routers import admin, auth
+from web_backend.schemas import Message
 
 app = FastAPI()
-app.include_router(users.router)
+app.include_router(auth.router)
+app.include_router(admin.router)
 
 
-@app.get('/', status_code=HTTPStatus.OK, response_model=MessageSchema)
+@app.get('/', status_code=HTTPStatus.OK, response_model=Message)
 def read_root():
     return {'message': 'Hello World!'}
