@@ -26,7 +26,7 @@ Siga os passos abaixo para clonar o repositório e executar a aplicação:
 3. **Crie um arquivo .env na raíz do projeto**
 
     ```
-    DATABASE_URL="postgresql+psycopg://<DB_USER>:<DB_PASSWORD>@localhost:5432/<DB_NAME>"
+    DATABASE_URL="postgresql+psycopg://<DB_USER>:<DB_PASSWORD>@<host_address>:5432/<DB_NAME>"
     SECRET_KEY="<YOUR_SECRET_KEY>"
     ALGORITHM="HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES=<INT>
