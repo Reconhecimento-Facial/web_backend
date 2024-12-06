@@ -15,18 +15,14 @@ services:
 
   facial_web_backend:
     image: facial_web_backend
-    volumes:
-      - .:/app
-    entrypoint: ./entrypoint.sh
-    build: .
     env_file:
       - .env
+    entrypoint: ./entrypoint.sh
+    build: .
     ports:
       - "8000:8000"
     depends_on:
       - facial_database
-    environment:
-      DATABASE_URL: postgresql+psycopg://app_user:app_password@facial_database:5432/app_db
 
 volumes:
   pgdata:

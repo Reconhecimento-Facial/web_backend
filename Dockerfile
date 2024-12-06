@@ -2,11 +2,10 @@ FROM python:3.12-slim
 ENV POETRY_VIRTUALENVS_CREATE=false
 
 WORKDIR /app
-COPY . .
+COPY . /app
 
-RUN chmod +x /app/entrypoint.sh
-RUN pip install poetry
-RUN poetry install --no-interaction --no-ansi
+RUN chmod +x /app/entrypoint.sh && \
+    pip install poetry && \
+    poetry install --no-interaction --no-ansi
 
 EXPOSE 8000
-CMD ["poetry", "run", "fastapi", "run", "web_backend/app.py"]
