@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jwt import DecodeError, ExpiredSignatureError, decode, encode
-from passlib.context import CryptContext
+from pwdlib import PasswordHash
 from sqlalchemy import select
 from zoneinfo import ZoneInfo
 
@@ -17,7 +17,7 @@ from web_backend.settings import Settings
 settings = Settings()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/token')
-pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+pwd_context = PasswordHash.recommended()
 
 
 def get_password_hash(password: str) -> str:
