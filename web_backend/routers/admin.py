@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from web_backend.database import get_session
 from web_backend.models import Admin
 from web_backend.schemas import (
+    AdminProfile,
     AdminPublic,
     Admins,
     AdminSchema,
@@ -99,3 +100,12 @@ def delete_admin(
     session.commit()
 
     return {'message': 'Admin deleted successfully'}
+
+
+@router.get(
+    '/profile',
+    status_code=HTTPStatus.OK,
+    response_model=AdminProfile,
+)
+def get_admin_profile(current_admin: Admin = Depends(get_current_admin)):
+    return current_admin
