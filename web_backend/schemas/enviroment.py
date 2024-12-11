@@ -2,6 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from .message import Message
 
 class EnviromentSchema(BaseModel):
     name: str
@@ -16,3 +17,7 @@ class EnviromentPublic(EnviromentSchema):
 
 class Enviroments(BaseModel):
     enviroments: list[EnviromentPublic]
+
+
+class EnviromentUpdated(Message):
+    enviroment_updated: EnviromentPublic

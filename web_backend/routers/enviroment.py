@@ -2,7 +2,7 @@ from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from web_backend.database import get_session
@@ -11,6 +11,7 @@ from web_backend.schemas import (
     EnviromentPublic,
     Enviroments,
     EnviromentSchema,
+    EnviromentUpdated,
     Message,
 )
 from web_backend.security import get_current_admin
@@ -90,3 +91,33 @@ def delete_enviroment(
     session.commit()
 
     return {'message': 'Enviroment deleted successfully!'}
+
+
+@router.put(
+    '/{enviroment_id}',
+    status_code=HTTPStatus.OK,
+    response_model=EnviromentUpdated,
+)
+def update_enviroment(
+    enviroment_id: int,
+    new_enviroment: EnviromentSchema,
+    current_admin: Annotated[Admin, Depends(get_current_admin)],
+    session: Annotated[Session, Depends(get_session)],
+) -> EnviromentUpdated:
+    enviroment_db = session.scalar(
+        select(Enviroment).where(Enviroment.id == enviroment_id)
+    )
+
+    if enviroment_id is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='Enviroment not found'
+        )
+
+    enviroment_db.name = new_enviroment.name
+    enviroment_db.updated_at = func.now()
+    session.commit()
+
+    return {
+        'message': 'Enviroment updated successfully!',
+        'enviroment_updated': enviroment_db
+    }
