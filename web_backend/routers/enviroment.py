@@ -2,7 +2,7 @@ from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from web_backend.database import get_session
@@ -119,5 +119,5 @@ def update_enviroment(
 
     return {
         'message': 'Enviroment updated successfully!',
-        'enviroment_updated': enviroment_db
+        'enviroment_updated': enviroment_db,
     }
