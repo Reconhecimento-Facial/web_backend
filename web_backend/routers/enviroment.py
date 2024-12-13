@@ -6,118 +6,118 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from web_backend.database import get_session
-from web_backend.models import Admin, Enviroment
+from web_backend.models import Admin, Environment
 from web_backend.schemas import (
-    EnviromentPublic,
-    Enviroments,
-    EnviromentSchema,
-    EnviromentUpdated,
+    EnvironmentPublic,
+    Environments,
+    EnvironmentSchema,
+    EnvironmentUpdated,
     Message,
 )
 from web_backend.security import get_current_admin
 
-router = APIRouter(prefix='/enviroments', tags=['enviroments'])
+router = APIRouter(prefix='/Environments', tags=['Environments'])
 
 
 @router.post(
     path='/',
     status_code=HTTPStatus.CREATED,
-    response_model=EnviromentPublic,
+    response_model=EnvironmentPublic,
     responses={
         HTTPStatus.CONFLICT: {'model': Message},
         HTTPStatus.UNAUTHORIZED: {'model': Message},
     },
 )
-def create_enviroment(
-    enviroment: EnviromentSchema,
+def create_Environment(
+    environment: EnvironmentSchema,
     current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
-) -> EnviromentPublic:
-    enviroment_db = session.scalar(
-        select(Enviroment).where(Enviroment.name == enviroment.name)
+) -> EnvironmentPublic:
+    environment_db = session.scalar(
+        select(Environment).where(Environment.name == environment.name)
     )
 
-    if enviroment_db:
+    if environment_db:
         raise HTTPException(
             status_code=HTTPStatus.CONFLICT,
-            detail='Enviroment name already in use',
+            detail='Environment name already in use',
         )
 
-    enviroment_db = Enviroment(
-        name=enviroment.name, creator_admin_id=current_admin.id
+    environment_db = Environment(
+        name=environment.name, creator_admin_id=current_admin.id
     )
 
-    session.add(enviroment_db)
+    session.add(environment_db)
     session.commit()
-    session.refresh(enviroment_db)
+    session.refresh(environment_db)
 
-    return enviroment_db
+    return environment_db
 
 
 @router.get(
     path='/',
     status_code=HTTPStatus.OK,
-    response_model=Enviroments,
+    response_model=Environments,
 )
-def get_enviroments(
+def get_environments(
     current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
-) -> Enviroments:
-    enviroments = session.scalars(select(Enviroment)).all()
-    return {'enviroments': enviroments}
+) -> Environments:
+    environments = session.scalars(select(Environment)).all()
+    return {'environments': environments}
 
 
 @router.delete(
-    path='/{enviroment_id}',
+    path='/{Environment_id}',
     status_code=HTTPStatus.OK,
     response_model=Message,
     responses={HTTPStatus.NOT_FOUND: {'model': Message}},
 )
-def delete_enviroment(
-    enviroment_id: int,
+def delete_Environment(
+    environment_id: int,
     current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
 ) -> Message:
-    enviroment_db = session.scalar(
-        select(Enviroment).where(Enviroment.id == enviroment_id)
+    environment_db = session.scalar(
+        select(Environment).where(Environment.id == environment_id)
     )
 
-    if enviroment_db is None:
+    if environment_db is None:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='Enviroment not found'
+            status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
         )
 
-    session.delete(enviroment_db)
+    session.delete(environment_db)
     session.commit()
 
-    return {'message': 'Enviroment deleted successfully!'}
+    return {'message': 'Environment deleted successfully!'}
 
 
 @router.put(
-    '/{enviroment_id}',
+    '/{Environment_id}',
     status_code=HTTPStatus.OK,
-    response_model=EnviromentUpdated,
+    response_model=EnvironmentUpdated,
 )
-def update_enviroment(
-    enviroment_id: int,
-    new_enviroment: EnviromentSchema,
+def update_Environment(
+    Environment_id: int,
+    new_environment: EnvironmentSchema,
     current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
-) -> EnviromentUpdated:
-    enviroment_db = session.scalar(
-        select(Enviroment).where(Enviroment.id == enviroment_id)
+) -> EnvironmentUpdated:
+    environment_db = session.scalar(
+        select(Environment).where(Environment.id == Environment_id)
     )
 
-    if enviroment_id is None:
+    if Environment_id is None:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='Enviroment not found'
+            status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
         )
 
-    enviroment_db.name = new_enviroment.name
-    enviroment_db.updated_at = func.now()
+    environment_db.name = new_environment.name
+    environment_db.updated_at = func.now()
     session.commit()
 
     return {
-        'message': 'Enviroment updated successfully!',
-        'enviroment_updated': enviroment_db,
+        'message': 'Environment updated successfully!',
+        'Environment_updated': environment_db,
     }
