@@ -1,6 +1,6 @@
 from .admin import Admin
 from .base import table_registry
-from .enviroment import Enviroment
+from .environment import Environment
 from .user import User
 
-__all__ = ['Admin', 'Enviroment', 'table_registry', 'User']
+__all__ = ['Admin', 'Environment', 'table_registry', 'User']
