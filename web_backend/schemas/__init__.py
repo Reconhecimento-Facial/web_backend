@@ -1,9 +1,9 @@
 from .admin import AdminDB, AdminProfile, AdminPublic, Admins, AdminSchema
-from .enviroment import (
-    EnviromentPublic,
-    Enviroments,
-    EnviromentSchema,
-    EnviromentUpdated,
+from .environment import (
+    EnvironmentPublic,
+    Environments,
+    EnvironmentSchema,
+    EnvironmentUpdated,
 )
 from .message import HTTPExceptionResponse, Message
 from .token import Token, TokenData
@@ -22,10 +22,10 @@ __all__ = [
     'AdminPublic',
     'Admins',
     'AdminSchema',
-    'EnviromentPublic',
-    'Enviroments',
-    'EnviromentSchema',
-    'EnviromentUpdated',
+    'EnvironmentPublic',
+    'Environments',
+    'EnvironmentSchema',
+    'EnvironmentUpdated',
     'HTTPExceptionResponse',
     'Message',
     'Token',
