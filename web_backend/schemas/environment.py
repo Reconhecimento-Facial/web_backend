@@ -27,10 +27,10 @@ class EnvironmentUpdated(Message):
         from_attributes = True
 
 
-class EnvironmentAddedAux(BaseModel):
+class EnvironmentAux(BaseModel):
     id: int
     name: str
 
 
 class EnvironmentAdded(Message):
-    environment_added: EnvironmentAddedAux
+    environment_added: EnvironmentAux

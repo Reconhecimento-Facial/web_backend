@@ -1,7 +1,6 @@
 from .admin import AdminDB, AdminProfile, AdminPublic, Admins, AdminSchema
 from .environment import (
     EnvironmentAdded,
-    EnvironmentAddedAux,
     EnvironmentPublic,
     Environments,
     EnvironmentSchema,
