@@ -175,7 +175,11 @@ def patch_user(
     return {'message': 'User updated sucessfully', 'user_updated': user_db}
 
 
-@router.get('/{user_id}', response_model=Page[EnvironmentPublic])
+@router.get(
+    path='/{user_id}',
+    status_code=HTTPStatus.OK,
+    response_model=Page[EnvironmentPublic]
+)
 def get_user_enviroments(
     user_id: int,
     current_admin: Annotated[Admin, Depends(get_current_admin)],
