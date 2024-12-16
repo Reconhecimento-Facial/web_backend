@@ -122,7 +122,7 @@ def update_Environment(
 
     return {
         'message': 'Environment updated successfully!',
-        'Environment_updated': environment_db,
+        'environment_updated': environment_db,
     }
 
 
