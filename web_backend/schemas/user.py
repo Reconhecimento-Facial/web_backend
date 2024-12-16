@@ -35,3 +35,8 @@ class UserUpdated(Message):
 
 class ExistingUser(Message):
     existing_user: UserPublic
+
+
+class UserNameId(BaseModel):
+    id: int
+    name: str

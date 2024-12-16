@@ -8,8 +8,9 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from web_backend.database import get_session
-from web_backend.models import Admin, User
+from web_backend.models import Admin, Environment, User
 from web_backend.schemas import (
+    EnvironmentPublic,
     ExistingUser,
     Message,
     UserCreated,
@@ -172,3 +173,23 @@ def patch_user(
     session.commit()
     session.refresh(user_db)
     return {'message': 'User updated sucessfully', 'user_updated': user_db}
+
+
+@router.get('/{user_id}', response_model=Page[EnvironmentPublic])
+def get_user_enviroments(
+    user_id: int,
+    current_admin: Annotated[Admin, Depends(get_current_admin)],
+    session: Annotated[Session, Depends(get_session)],
+) -> Page[EnvironmentPublic]:
+    user_db = session.scalar(select(User).where(User.id == user_id))
+
+    if user_db is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='User not found!'
+        )
+
+    query = (
+        select(Environment).join(User.environments).where(User.id == user_id)
+    )
+
+    return paginate(session, query)

@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi_pagination import add_pagination
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from web_backend.routers import admin, auth, enviroment, user
+from web_backend.routers import admin, auth, environment, environment_user, user
 from web_backend.schemas import ExistingUser, Message
 
 app = FastAPI()
@@ -28,7 +28,8 @@ app.add_middleware(
 app.include_router(user.router)
 app.include_router(auth.router)
 app.include_router(admin.router)
-app.include_router(enviroment.router)
+app.include_router(environment.router)
+app.include_router(environment_user.router)
 
 
 @app.exception_handler(StarletteHTTPException)
