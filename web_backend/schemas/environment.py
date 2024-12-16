@@ -22,3 +22,15 @@ class Environments(BaseModel):
 
 class EnvironmentUpdated(Message):
     environment_updated: EnvironmentPublic
+
+    class Config:
+        from_attributes = True
+
+
+class EnvironmentAddedAux(BaseModel):
+    id: int
+    name: str
+
+
+class EnvironmentAdded(Message):
+    environment_added: EnvironmentAddedAux
