@@ -1,5 +1,7 @@
 from .admin import AdminDB, AdminProfile, AdminPublic, Admins, AdminSchema
 from .environment import (
+    EnvironmentAdded,
+    EnvironmentAddedAux,
     EnvironmentPublic,
     Environments,
     EnvironmentSchema,
@@ -10,6 +12,7 @@ from .token import Token, TokenData
 from .user import (
     ExistingUser,
     UserCreated,
+    UserNameId,
     UserPatch,
     UserPublic,
     UserSchema,
@@ -31,9 +34,12 @@ __all__ = [
     'Token',
     'TokenData',
     'ExistingUser',
+    'EnvironmentAdded',
+    'EnvironmentAddedAux',
     'UserCreated',
     'UserPatch',
     'UserPublic',
     'UserSchema',
     'UserUpdated',
+    'UserNameId',
 ]
