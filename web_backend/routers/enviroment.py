@@ -132,7 +132,9 @@ def update_Environment(
     response_model=Page[UserNameId],
 )
 def get_environment_users(
-    environment_id: int, session: Annotated[Session, Depends(get_session)]
+    environment_id: int,
+    session: Annotated[Session, Depends(get_session)],
+    current_admin: Annotated[Admin, Depends(get_current_admin)]
 ) -> Page[UserNameId]:
     environment_db = session.scalar(
         select(Environment).where(Environment.id == environment_id)
