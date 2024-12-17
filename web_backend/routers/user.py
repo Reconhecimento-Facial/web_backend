@@ -1,7 +1,9 @@
+import shutil
 from http import HTTPStatus
+from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import and_, or_, select
@@ -178,7 +180,7 @@ def patch_user(
 @router.get(
     path='/{user_id}',
     status_code=HTTPStatus.OK,
-    response_model=Page[EnvironmentPublic]
+    response_model=Page[EnvironmentPublic],
 )
 def get_user_enviroments(
     user_id: int,
@@ -197,3 +199,31 @@ def get_user_enviroments(
     )
 
     return paginate(session, query)
+
+
+@router.post(path='/upload-image/{user_id}')
+async def perfil_photo_upload(
+    user_id: int,
+    file: UploadFile,
+    current_admin: Annotated[Admin, Depends(get_current_admin)],
+):
+    upload_dir = Path.cwd() / 'uploads' / 'users_photos'
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    extensao = Path(file.filename).suffix
+    nome_arquivo = f'{user_id}{extensao}'
+    file_path = upload_dir / nome_arquivo
+
+    if file_path.exists():
+        raise HTTPException(
+            status_code=HTTPStatus.CONFLICT,
+            detail=f"File for user '{user_id}' already exists!",
+        )
+
+    with file_path.open('wb') as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    return {
+        'message': 'Image uploaded successfully!',
+        'filename': file.filename,
+    }

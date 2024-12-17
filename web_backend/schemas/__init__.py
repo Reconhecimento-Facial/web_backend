@@ -34,7 +34,6 @@ __all__ = [
     'TokenData',
     'ExistingUser',
     'EnvironmentAdded',
-    'EnvironmentAddedAux',
     'UserCreated',
     'UserPatch',
     'UserPublic',
