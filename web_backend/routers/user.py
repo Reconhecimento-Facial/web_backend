@@ -1,9 +1,7 @@
-import shutil
 from http import HTTPStatus
-from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import and_, or_, select
@@ -22,6 +20,7 @@ from web_backend.schemas import (
     UserUpdated,
 )
 from web_backend.security import get_current_admin
+from web_backend.user_utils.upload_photo import upload_photo
 
 router = APIRouter(prefix='/users', tags=['users'])
 
@@ -33,15 +32,16 @@ router = APIRouter(prefix='/users', tags=['users'])
     responses={HTTPStatus.CONFLICT: {'model': Message}},
 )
 def create_user(
-    user_schema: UserSchema,
+    user_form: Annotated[UserSchema, Depends(UserSchema)],
     current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
+    file: Annotated[UploadFile | str, File()] = None,
 ) -> UserCreated:
     user_db = session.scalar(
         select(User).where(
-            (User.email == user_schema.email)
-            | (User.cpf == user_schema.cpf)
-            | (User.phone_number == user_schema.phone_number)
+            (User.email == user_form.email)
+            | (User.cpf == user_form.cpf)
+            | (User.phone_number == user_form.phone_number)
         )
     )
 
@@ -49,29 +49,43 @@ def create_user(
         http_exception = HTTPException(
             status_code=HTTPStatus.CONFLICT, detail=' already in use!'
         )
-        if user_db.email == user_schema.email:
+        if user_db.email == user_form.email:
             http_exception.detail = 'Email' + http_exception.detail
             raise http_exception
-        elif user_db.cpf == user_schema.cpf:
+        elif user_db.cpf == user_form.cpf:
             http_exception.detail = 'CPF' + http_exception.detail
             raise http_exception
-        elif user_db.phone_number == user_schema.phone_number:
+        elif user_db.phone_number == user_form.phone_number:
             http_exception.detail = 'Phone Number' + http_exception.detail
             raise http_exception
 
     user_db = User(
         registered_by_admin_id=current_admin.id,
-        name=user_schema.name,
-        email=user_schema.email,
-        date_of_birth=user_schema.date_of_birth,
-        cpf=user_schema.cpf,
-        phone_number=user_schema.phone_number,
+        name=user_form.name,
+        email=user_form.email,
+        date_of_birth=user_form.date_of_birth,
+        cpf=user_form.cpf,
+        phone_number=user_form.phone_number,
     )
 
     session.add(user_db)
     session.commit()
     session.refresh(user_db)
-    return {'message': 'User created sucessfully', 'user_created': user_db}
+
+    photo = ''
+    if not isinstance(file, str):
+        if not upload_photo(file, user_db.id):
+            raise HTTPException(
+                status_code=HTTPStatus.CONFLICT,
+                detail=f"File for user '{user_db.id}' already exists!",
+            )
+            photo = file.filename
+
+    return {
+        'message': 'User created sucessfully',
+        'user_created': user_db,
+        'photo': photo,
+    }
 
 
 @router.delete(
@@ -202,26 +216,16 @@ def get_user_enviroments(
 
 
 @router.post(path='/upload-image/{user_id}')
-async def perfil_photo_upload(
+def perfil_photo_upload(
     user_id: int,
-    file: UploadFile,
+    file: Annotated[UploadFile, File()],
     current_admin: Annotated[Admin, Depends(get_current_admin)],
 ):
-    upload_dir = Path.cwd() / 'uploads' / 'users_photos'
-    upload_dir.mkdir(parents=True, exist_ok=True)
-
-    extensao = Path(file.filename).suffix
-    nome_arquivo = f'{user_id}{extensao}'
-    file_path = upload_dir / nome_arquivo
-
-    if file_path.exists():
+    if not upload_photo(file, user_id):
         raise HTTPException(
             status_code=HTTPStatus.CONFLICT,
             detail=f"File for user '{user_id}' already exists!",
         )
-
-    with file_path.open('wb') as buffer:
-        shutil.copyfileobj(file.file, buffer)
 
     return {
         'message': 'Image uploaded successfully!',

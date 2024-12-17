@@ -1,10 +1,10 @@
-from pathlib import Path
-from fastapi import UploadFile
 import shutil
+from pathlib import Path
+
+from fastapi import UploadFile
 
 
 def upload_photo(file: UploadFile, user_id: int) -> bool:
-
     upload_dir = Path.cwd() / 'uploads' / 'users_photos'
     upload_dir.mkdir(parents=True, exist_ok=True)
 
