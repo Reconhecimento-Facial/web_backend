@@ -15,6 +15,8 @@ services:
 
   facial_web_backend:
     image: facial_web_backend
+    environment:
+      - DATABASE_URL=postgresql+psycopg://app_user:app_password@facial_database:5432/app_db
     env_file:
       - .env
     entrypoint: ./entrypoint.sh

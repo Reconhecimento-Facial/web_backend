@@ -65,9 +65,8 @@ def add_environment_permission(
 def remove_environment_permission(
     user_id: int,
     environment_id: int,
-    session: Annotated[Session, Depends(get_session)]
+    session: Annotated[Session, Depends(get_session)],
 ) -> Message:
-    
     user_db = session.scalar(select(User).where(User.id == user_id))
 
     if user_db is None:
@@ -89,7 +88,7 @@ def remove_environment_permission(
             status_code=HTTPStatus.CONFLICT,
             detail='User does not have this environment!',
         )
-    
+
     user_db.environments.remove(env_db)
     session.commit()
     session.refresh(user_db)
