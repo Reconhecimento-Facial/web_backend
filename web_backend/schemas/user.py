@@ -1,19 +1,9 @@
 from datetime import date
 
-from fastapi import Form
 from pydantic import BaseModel, EmailStr
 
 from .message import Message
-
-
-def form_body(cls):
-    cls.__signature__ = cls.__signature__.replace(
-        parameters=[
-            arg.replace(default=Form(...))
-            for arg in cls.__signature__.parameters.values()
-        ]
-    )
-    return cls
+from .schemas_utils import form_body
 
 
 @form_body
@@ -36,10 +26,15 @@ class UserPatch(BaseModel):
 class UserPublic(UserSchema):
     id: int
 
+    class Config:
+        from_attributes = True
+
 
 class UserCreated(Message):
     user_created: UserPublic
     photo: str
+    environments_ids: list[int]
+    invalid_environments_ids: list[int]
 
 
 class UserUpdated(Message):
