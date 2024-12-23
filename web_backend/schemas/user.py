@@ -1,12 +1,11 @@
 from datetime import date
 
 from pydantic import BaseModel, EmailStr
-
 from .message import Message
-from .schemas_utils import form_body
+from .schemas_utils import form_body_user_schema
 
 
-@form_body
+@form_body_user_schema
 class UserSchema(BaseModel):
     name: str
     email: EmailStr
