@@ -56,14 +56,9 @@ def create_user(
     environment_ids: Annotated[list[int] | None, Form()] = None,
 ):
     if not verify_repeated_fields(user_form, session):
-        user_db = User(
-            registered_by_admin_id=current_admin.id,
-            name=user_form.name,
-            email=user_form.email,
-            date_of_birth=user_form.date_of_birth,
-            cpf=user_form.cpf,
-            phone_number=user_form.phone_number,
-        )
+        user_form = user_form.model_dump()
+        user_form['registered_by_admin_id'] = current_admin.id
+        user_db = User(**user_form)
 
         session.add(user_db)
         session.commit()
