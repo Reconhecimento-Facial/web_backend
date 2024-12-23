@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import and_, or_, select
@@ -13,14 +13,17 @@ from web_backend.schemas import (
     EnvironmentPublic,
     ExistingUser,
     Message,
-    UserCreated,
     UserPatch,
     UserPublic,
     UserSchema,
     UserUpdated,
 )
 from web_backend.security import get_current_admin
-from web_backend.user_utils.upload_photo import upload_photo
+from web_backend.utils.user import (
+    upload_photo,
+    verify_environment_ids,
+    verify_repeated_fields,
+)
 
 router = APIRouter(prefix='/users', tags=['users'])
 
@@ -28,63 +31,55 @@ router = APIRouter(prefix='/users', tags=['users'])
 @router.post(
     path='/',
     status_code=HTTPStatus.CREATED,
-    response_model=UserCreated,
+    response_model=dict,
     responses={HTTPStatus.CONFLICT: {'model': Message}},
+    openapi_extra={
+        'requestBody': {
+            'content': {
+                'multipart/form-data': {
+                    'encoding': {
+                        'environment_ids': {
+                            'style': 'form',
+                            'explode': True,
+                        },
+                    },
+                },
+            },
+        },
+    },
 )
 def create_user(
     user_form: Annotated[UserSchema, Depends(UserSchema)],
     current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
     file: Annotated[UploadFile | str, File()] = None,
-) -> UserCreated:
-    user_db = session.scalar(
-        select(User).where(
-            (User.email == user_form.email)
-            | (User.cpf == user_form.cpf)
-            | (User.phone_number == user_form.phone_number)
-        )
-    )
+    environment_ids: Annotated[list[int] | None, Form()] = None,
+):
+    if not verify_repeated_fields(user_form, session):
+        user_form = user_form.model_dump()
+        user_form['registered_by_admin_id'] = current_admin.id
+        user_db = User(**user_form)
 
-    if user_db:
-        http_exception = HTTPException(
-            status_code=HTTPStatus.CONFLICT, detail=' already in use!'
-        )
-        if user_db.email == user_form.email:
-            http_exception.detail = 'Email' + http_exception.detail
-            raise http_exception
-        elif user_db.cpf == user_form.cpf:
-            http_exception.detail = 'CPF' + http_exception.detail
-            raise http_exception
-        elif user_db.phone_number == user_form.phone_number:
-            http_exception.detail = 'Phone Number' + http_exception.detail
-            raise http_exception
-
-    user_db = User(
-        registered_by_admin_id=current_admin.id,
-        name=user_form.name,
-        email=user_form.email,
-        date_of_birth=user_form.date_of_birth,
-        cpf=user_form.cpf,
-        phone_number=user_form.phone_number,
-    )
-
-    session.add(user_db)
-    session.commit()
-    session.refresh(user_db)
+        session.add(user_db)
+        session.commit()
+        session.refresh(user_db)
 
     photo = ''
     if not isinstance(file, str):
-        if not upload_photo(file, user_db.id):
-            raise HTTPException(
-                status_code=HTTPStatus.CONFLICT,
-                detail=f"File for user '{user_db.id}' already exists!",
-            )
-            photo = file.filename
+        photo = file.filename
+
+    existing_ids, invalid_environment_ids = verify_environment_ids(
+        environment_ids, session, user_db
+    )
+
+    user_public = UserPublic.model_validate(user_db)
 
     return {
         'message': 'User created sucessfully',
-        'user_created': user_db,
+        'user_created': user_public,
         'photo': photo,
+        'environment_ids': existing_ids,
+        'invalid_environment_ids': invalid_environment_ids,
     }
 
 

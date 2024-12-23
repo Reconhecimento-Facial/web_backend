@@ -1,22 +1,11 @@
 from datetime import date
 
-from fastapi import Form
 from pydantic import BaseModel, EmailStr
-
 from .message import Message
+from .schemas_utils import form_body_user_schema
 
 
-def form_body(cls):
-    cls.__signature__ = cls.__signature__.replace(
-        parameters=[
-            arg.replace(default=Form(...))
-            for arg in cls.__signature__.parameters.values()
-        ]
-    )
-    return cls
-
-
-@form_body
+@form_body_user_schema
 class UserSchema(BaseModel):
     name: str
     email: EmailStr
@@ -36,10 +25,15 @@ class UserPatch(BaseModel):
 class UserPublic(UserSchema):
     id: int
 
+    class Config:
+        from_attributes = True
+
 
 class UserCreated(Message):
     user_created: UserPublic
     photo: str
+    environments_ids: list[int]
+    invalid_environments_ids: list[int]
 
 
 class UserUpdated(Message):
