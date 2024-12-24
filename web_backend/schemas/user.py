@@ -1,6 +1,7 @@
 from datetime import date
 
 from pydantic import BaseModel, EmailStr
+
 from .message import Message
 from .schemas_utils import form_body_user_schema
 

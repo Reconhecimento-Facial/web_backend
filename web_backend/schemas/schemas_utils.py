@@ -18,7 +18,7 @@ def form_body_user_schema(cls):
             new_parameters.append(
                 arg.replace(
                     default=Form(
-                        ..., 
+                        ...,
                         pattern=r'^\d{3}\.\d{3}\.\d{3}-\d{2}$',
                         description='CPF no formato XXX.XXX.XXX-XX',
                     )
