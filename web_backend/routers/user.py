@@ -56,9 +56,9 @@ def create_user(
     environment_ids: Annotated[list[int] | None, Form()] = None,
 ):
     if not verify_repeated_fields(user_form, session):
-        user_form = user_form.model_dump()
-        user_form['registered_by_admin_id'] = current_admin.id
-        user_db = User(**user_form)
+        user_db = User(
+            **user_form.model_dump(), registered_by_admin_id=current_admin.id
+        )
 
         session.add(user_db)
         session.commit()
@@ -149,7 +149,6 @@ def patch_user(
 
     if user_db:
         message = ' already in use!'
-
         if user_db.email == user_schema.email:
             message = 'Email' + message
         elif user_db.cpf == user_schema.cpf:
@@ -157,15 +156,7 @@ def patch_user(
         elif user_db.phone_number == user_schema.phone_number:
             message = 'Phone Number' + message
 
-        user_public = UserPublic(
-            name=user_db.name,
-            email=user_db.email,
-            date_of_birth=user_db.date_of_birth,
-            cpf=user_db.cpf,
-            phone_number=user_db.phone_number,
-            id=user_db.id,
-        )
-
+        user_public = UserPublic.model_validate(user_db)
         raise HTTPException(
             status_code=HTTPStatus.CONFLICT,
             detail={'message': message, 'existing_user': user_public},

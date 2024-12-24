@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -21,6 +21,6 @@ class Environment:
         init=False, server_default=func.now(), onupdate=func.now()
     )
     creator_admin_id: Mapped[int] = mapped_column(ForeignKey('admins.id'))
-    users: Mapped[Optional[List['User']]] = relationship(  # noqa: F821  # type: ignore
+    users: Mapped[Optional[list['User']]] = relationship(  # noqa: F821  # type: ignore
         secondary=association_table, back_populates='environments', init=False
     )
