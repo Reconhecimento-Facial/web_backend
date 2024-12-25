@@ -1,4 +1,5 @@
 from datetime import date
+from enum import Enum
 from typing import Annotated
 
 from fastapi import Query
@@ -61,11 +62,18 @@ class UserNameId(BaseModel):
 
 
 class UserFilter(BaseModel):
+    class SortByOptions(str, Enum):
+        name_opt = 'Name'
+        email_opt = 'Email'
+
     name: Annotated[
         str | None, Query(None, description='Filter by user name')
     ] = None
     status: Annotated[
         UserStatus | None, Query(None, description='Filter by user status')
+    ] = None
+    sort_by: Annotated[
+        SortByOptions | None, Query(None, description='Sort the result')
     ] = None
 
 

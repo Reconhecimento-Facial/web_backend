@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy import and_, desc, or_, select
+from sqlalchemy import and_, asc, or_, select
 from sqlalchemy.orm import Session
 from unidecode import unidecode
 
@@ -128,7 +128,11 @@ def get_users(
     if filters.status:
         query = query.where(User.status == filters.status)
 
-    query = query.order_by(desc(User.registered_at))
+    if filters.sort_by:
+        if filters.sort_by == UserFilter.SortByOptions.name_opt:
+            query = query.order_by(asc(User.name))
+        elif filters.sort_by == UserFilter.SortByOptions.email_opt:
+            query = query.order_by(asc(User.email))
 
     return paginate(session, query)
 
@@ -141,7 +145,7 @@ def get_users(
         HTTPStatus.NOT_FOUND: {'model': Message},
         HTTPStatus.CONFLICT: {'model': ExistingUser},
     },
-    dependencies=[Depends(get_current_admin)]
+    dependencies=[Depends(get_current_admin)],
 )
 def patch_user(
     user_id: int,
