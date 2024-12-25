@@ -2,7 +2,7 @@ import enum
 from datetime import date, datetime
 from typing import Optional
 
-from sqlalchemy import Enum, ForeignKey, func, Index
+from sqlalchemy import Enum, ForeignKey, Index, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import table_registry
@@ -52,5 +52,6 @@ class User:
             'idx_users_name_gin_trgm',
             'name_unaccent',
             postgresql_using='gin',
-            postgresql_ops={'name_unaccent': 'gin_trgm_ops'}),
+            postgresql_ops={'name_unaccent': 'gin_trgm_ops'},
+        ),
     )
