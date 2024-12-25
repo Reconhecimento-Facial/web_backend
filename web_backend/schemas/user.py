@@ -1,6 +1,7 @@
 from datetime import date
 from typing import Annotated
 
+from fastapi import Query
 from pydantic import BaseModel, EmailStr, Field
 
 from web_backend.models.user import UserStatus
@@ -57,3 +58,16 @@ class ExistingUser(Message):
 class UserNameId(BaseModel):
     id: int
     name: str
+
+
+class UserFilter(BaseModel):
+    name: Annotated[
+        str | None, Query(None, description='Filter by user name')
+    ] = None
+    status: Annotated[
+        UserStatus | None, Query(None, description='Filter by user status')
+    ] = None
+
+
+class PhotoUploaded(Message):
+    filename: str

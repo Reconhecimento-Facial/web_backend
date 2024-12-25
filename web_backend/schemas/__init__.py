@@ -10,7 +10,9 @@ from .message import HTTPExceptionResponse, Message
 from .token import Token, TokenData
 from .user import (
     ExistingUser,
+    PhotoUploaded,
     UserCreated,
+    UserFilter,
     UserNameId,
     UserPatch,
     UserPublic,
@@ -40,4 +42,6 @@ __all__ = [
     'UserSchema',
     'UserUpdated',
     'UserNameId',
+    'UserFilter',
+    'PhotoUploaded',
 ]
