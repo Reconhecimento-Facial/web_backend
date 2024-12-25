@@ -2,7 +2,7 @@ import enum
 from datetime import date, datetime
 from typing import Optional
 
-from sqlalchemy import Enum, ForeignKey, func
+from sqlalchemy import Enum, ForeignKey, Index, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import table_registry
@@ -29,6 +29,7 @@ class User:
         init=False, server_default=func.now(), onupdate=func.now()
     )
     name: Mapped[str] = mapped_column(init=True)
+    name_unaccent: Mapped[str] = mapped_column(init=True)
     email: Mapped[str] = mapped_column(unique=True)
     date_of_birth: Mapped[date] = mapped_column()
     cpf: Mapped[str] = mapped_column(unique=True)
@@ -44,4 +45,13 @@ class User:
     )
     environments: Mapped[Optional[list['Environment']]] = relationship(  # noqa: F821 # type: ignore
         secondary=association_table, back_populates='users', init=False
+    )
+
+    __table_args__ = (
+        Index(
+            'idx_users_name_gin_trgm',
+            'name_unaccent',
+            postgresql_using='gin',
+            postgresql_ops={'name_unaccent': 'gin_trgm_ops'},
+        ),
     )

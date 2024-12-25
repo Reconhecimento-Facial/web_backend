@@ -4,8 +4,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, asc, or_, select
 from sqlalchemy.orm import Session
+from unidecode import unidecode
 
 from web_backend.database import get_session
 from web_backend.models import Admin, Environment, User
@@ -13,6 +14,8 @@ from web_backend.schemas import (
     EnvironmentPublic,
     ExistingUser,
     Message,
+    PhotoUploaded,
+    UserFilter,
     UserPatch,
     UserPublic,
     UserSchema,
@@ -49,7 +52,7 @@ router = APIRouter(prefix='/users', tags=['users'])
     },
 )
 def create_user(
-    user_form: Annotated[UserSchema, Depends(UserSchema)],
+    user_form: Annotated[UserSchema, Depends()],
     current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
     file: Annotated[UploadFile | str, File()] = None,
@@ -88,10 +91,10 @@ def create_user(
     status_code=HTTPStatus.OK,
     response_model=Message,
     responses={HTTPStatus.NOT_FOUND: {'model': Message}},
+    dependencies=[Depends(get_current_admin)],
 )
 def delete_user(
     user_id: int,
-    current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
 ) -> Message:
     user_db = session.scalar(select(User).where(User.id == user_id))
@@ -110,12 +113,27 @@ def delete_user(
     path='/',
     status_code=HTTPStatus.OK,
     response_model=Page[UserPublic],
+    dependencies=[Depends(get_current_admin)],
 )
 def get_users(
-    current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
+    filters: Annotated[UserFilter, Depends()],
 ) -> Page[UserPublic]:
-    query = select(User).order_by(User.registered_at)
+    query = select(User)
+    if filters.name:
+        query = query.where(
+            User.name_unaccent.ilike(f'%{unidecode(filters.name)}%')
+        )
+
+    if filters.status:
+        query = query.where(User.status == filters.status)
+
+    if filters.sort_by:
+        if filters.sort_by == UserFilter.SortByOptions.name_opt:
+            query = query.order_by(asc(User.name))
+        elif filters.sort_by == UserFilter.SortByOptions.email_opt:
+            query = query.order_by(asc(User.email))
+
     return paginate(session, query)
 
 
@@ -127,11 +145,11 @@ def get_users(
         HTTPStatus.NOT_FOUND: {'model': Message},
         HTTPStatus.CONFLICT: {'model': ExistingUser},
     },
+    dependencies=[Depends(get_current_admin)],
 )
 def patch_user(
     user_id: int,
     user_schema: UserPatch,
-    current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
 ) -> UserUpdated:
     user_db = session.scalar(
@@ -181,10 +199,10 @@ def patch_user(
     path='/{user_id}',
     status_code=HTTPStatus.OK,
     response_model=Page[EnvironmentPublic],
+    dependencies=[Depends(get_current_admin)],
 )
 def get_user_enviroments(
     user_id: int,
-    current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
 ) -> Page[EnvironmentPublic]:
     user_db = session.scalar(select(User).where(User.id == user_id))
@@ -201,11 +219,15 @@ def get_user_enviroments(
     return paginate(session, query)
 
 
-@router.post(path='/upload-image/{user_id}')
+@router.post(
+    path='/upload-image/{user_id}',
+    status_code=HTTPStatus.CREATED,
+    response_model=PhotoUploaded,
+    dependencies=[Depends(get_current_admin)],
+)
 def perfil_photo_upload(
     user_id: int,
     file: Annotated[UploadFile, File()],
-    current_admin: Annotated[Admin, Depends(get_current_admin)],
 ):
     if not upload_photo(file, user_id):
         raise HTTPException(
