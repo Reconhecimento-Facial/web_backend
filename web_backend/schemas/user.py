@@ -66,6 +66,10 @@ class UserFilter(BaseModel):
         name_opt = 'Name'
         email_opt = 'Email'
 
+    class AscendingOrDescending(str, Enum):
+        ascending = 'Ascending'
+        descending = 'Descending'
+
     name: Annotated[
         str | None, Query(None, description='Filter by user name')
     ] = None
@@ -75,3 +79,7 @@ class UserFilter(BaseModel):
     sort_by: Annotated[
         SortByOptions | None, Query(None, description='Sort the result')
     ] = None
+    sort_order: Annotated[
+        AscendingOrDescending | None,
+        Query(None, description='Sort in ascending or descending order'),
+    ]

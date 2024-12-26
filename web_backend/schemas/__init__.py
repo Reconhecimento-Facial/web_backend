@@ -2,6 +2,7 @@ from .admin import AdminDB, AdminProfile, AdminPublic, Admins, AdminSchema
 from .environment import (
     EnvironmentAdded,
     EnvironmentCreated,
+    EnvironmentFilter,
     EnvironmentPublic,
     EnvironmentSchema,
     EnvironmentUpdated,
@@ -44,4 +45,5 @@ __all__ = [
     'UserFilter',
     'PhotoUploaded',
     'EnvironmentCreated',
+    'EnvironmentFilter',
 ]
