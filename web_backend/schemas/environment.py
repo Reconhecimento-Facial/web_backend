@@ -1,5 +1,8 @@
 from datetime import datetime
+from enum import Enum
+from typing import Annotated
 
+from fastapi import Query
 from pydantic import BaseModel
 
 from .message import Message
@@ -36,3 +39,17 @@ class EnvironmentAux(BaseModel):
 
 class EnvironmentAdded(Message):
     environment_added: EnvironmentAux
+
+
+class EnvironmentFilter(BaseModel):
+    class AscendingOrDescending(str, Enum):
+        ascending = 'Ascending'
+        descending = 'Descending'
+
+    name: Annotated[
+        str | None, Query(None, description='Filter by environment name')
+    ] = None
+    sort_order: Annotated[
+        AscendingOrDescending | None,
+        Query(None, description='Sort in ascending or descending order'),
+    ] = None

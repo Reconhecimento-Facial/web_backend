@@ -5,13 +5,15 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy import func, select
+from sqlalchemy import asc, desc, func, select
 from sqlalchemy.orm import Session
+from unidecode import unidecode
 
 from web_backend.database import get_session
 from web_backend.models import Admin, Environment, User
 from web_backend.schemas import (
     EnvironmentCreated,
+    EnvironmentFilter,
     EnvironmentPublic,
     EnvironmentSchema,
     EnvironmentUpdated,
@@ -76,8 +78,20 @@ def create_Environment(
 )
 def get_environments(
     session: Annotated[Session, Depends(get_session)],
+    filters: Annotated[EnvironmentFilter, Depends()],
 ) -> Page[EnvironmentPublic]:
     query = select(Environment)
+    if filters.name:
+        query = query.where(
+            Environment.name_unaccent.ilike(f'%{unidecode(filters.name)}%')
+        )
+
+    if filters.sort_order:
+        if filters.sort_order == filters.AscendingOrDescending.ascending:
+            query = query.order_by(asc(Environment.name))
+        elif filters.sort_order == filters.AscendingOrDescending.descending:
+            query = query.order_by(desc(Environment.name))
+
     return paginate(session, query)
 
 
