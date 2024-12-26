@@ -1,8 +1,6 @@
-import shutil
 from http import HTTPStatus
-from pathlib import Path
 
-from fastapi import HTTPException, UploadFile
+from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -10,24 +8,7 @@ from web_backend.models import Environment, User
 from web_backend.schemas import UserSchema
 
 
-def upload_photo(file: UploadFile, user_id: int) -> bool:
-    upload_dir = Path.cwd() / 'uploads' / 'users_photos'
-    upload_dir.mkdir(parents=True, exist_ok=True)
-
-    extensao = Path(file.filename).suffix
-    nome_arquivo = f'{user_id}{extensao}'
-    file_path = upload_dir / nome_arquivo
-
-    if file_path.exists():
-        return False
-
-    with file_path.open('wb') as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    return True
-
-
-def verify_repeated_fields(user_form: UserSchema, session: Session) -> bool:
+def verify_repeated_fields(user_form: UserSchema, session: Session) -> None:
     user_db = session.scalar(
         select(User).where(
             (User.email == user_form.email)
@@ -49,8 +30,6 @@ def verify_repeated_fields(user_form: UserSchema, session: Session) -> bool:
         elif user_db.phone_number == user_form.phone_number:
             http_exception.detail = 'Phone Number' + http_exception.detail
             raise http_exception
-
-    return False
 
 
 def verify_environment_ids(
