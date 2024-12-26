@@ -1,7 +1,8 @@
+from dataclasses import asdict
 from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import func, select
@@ -10,14 +11,16 @@ from sqlalchemy.orm import Session
 from web_backend.database import get_session
 from web_backend.models import Admin, Environment, User
 from web_backend.schemas import (
+    EnvironmentCreated,
     EnvironmentPublic,
-    Environments,
     EnvironmentSchema,
     EnvironmentUpdated,
     Message,
+    PhotoUploaded,
     UserNameId,
 )
 from web_backend.security import get_current_admin
+from web_backend.utils.upload_photo import upload_photo
 
 router = APIRouter(prefix='/environments', tags=['environments'])
 
@@ -25,17 +28,18 @@ router = APIRouter(prefix='/environments', tags=['environments'])
 @router.post(
     path='/',
     status_code=HTTPStatus.CREATED,
-    response_model=EnvironmentPublic,
+    response_model=EnvironmentCreated,
     responses={
         HTTPStatus.CONFLICT: {'model': Message},
         HTTPStatus.UNAUTHORIZED: {'model': Message},
     },
 )
 def create_Environment(
-    environment: EnvironmentSchema,
     current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
-) -> EnvironmentPublic:
+    environment: Annotated[EnvironmentSchema, Depends()],
+    photo: Annotated[UploadFile | str, File()] = None,
+) -> EnvironmentCreated:
     environment_db = session.scalar(
         select(Environment).where(Environment.name == environment.name)
     )
@@ -54,20 +58,27 @@ def create_Environment(
     session.commit()
     session.refresh(environment_db)
 
-    return environment_db
+    photo_ans = ''
+    if not isinstance(photo, str):
+        photo_ans = photo.filename
+        upload_photo(photo, environment_db.id, 'environments_photos')
+
+    environment_dict = asdict(environment_db)
+    environment_dict['photo'] = photo_ans
+    return environment_dict
 
 
 @router.get(
     path='/',
     status_code=HTTPStatus.OK,
-    response_model=Environments,
+    response_model=Page[EnvironmentPublic],
+    dependencies=[Depends(get_current_admin)],
 )
 def get_environments(
-    current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
-) -> Environments:
-    environments = session.scalars(select(Environment)).all()
-    return {'environments': environments}
+) -> Page[EnvironmentPublic]:
+    query = select(Environment)
+    return paginate(session, query)
 
 
 @router.delete(
@@ -130,11 +141,11 @@ def update_Environment(
     path='/{environment_id}',
     status_code=HTTPStatus.OK,
     response_model=Page[UserNameId],
+    dependencies=[Depends(get_current_admin)],
 )
 def get_environment_users(
     environment_id: int,
     session: Annotated[Session, Depends(get_session)],
-    current_admin: Annotated[Admin, Depends(get_current_admin)],
 ) -> Page[UserNameId]:
     environment_db = session.scalar(
         select(Environment).where(Environment.id == environment_id)
@@ -152,3 +163,21 @@ def get_environment_users(
     )
 
     return paginate(session, query)
+
+
+@router.post(
+    path='/upload-image/{environment_id}',
+    status_code=HTTPStatus.CREATED,
+    response_model=PhotoUploaded,
+    dependencies=[Depends(get_current_admin)],
+)
+def environment_photo_upload(
+    environment_id: int,
+    photo: Annotated[UploadFile, File()],
+):
+    upload_photo(photo, environment_id, 'environments_photos')
+
+    return {
+        'message': 'Image uploaded successfully!',
+        'filename': photo.filename,
+    }
