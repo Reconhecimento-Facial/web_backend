@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import ForeignKey, func
+from sqlalchemy import ForeignKey, Index, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import table_registry
@@ -13,7 +13,8 @@ class Environment:
     __tablename__ = 'environments'
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    name: Mapped[str] = mapped_column(unique=True)
+    name: Mapped[str] = mapped_column(init=True, unique=True)
+    name_unaccent: Mapped[str] = mapped_column(init=True)
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )
@@ -23,4 +24,13 @@ class Environment:
     creator_admin_id: Mapped[int] = mapped_column(ForeignKey('admins.id'))
     users: Mapped[Optional[list['User']]] = relationship(  # noqa: F821  # type: ignore
         secondary=association_table, back_populates='environments', init=False
+    )
+
+    __table_args__ = (
+        Index(
+            'idx_environments_name_gin_trgm',
+            'name_unaccent',
+            postgresql_using='gin',
+            postgresql_ops={'name_unaccent': 'gin_trgm_ops'},
+        ),
     )
