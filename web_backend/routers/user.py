@@ -22,8 +22,8 @@ from web_backend.schemas import (
     UserUpdated,
 )
 from web_backend.security import get_current_admin
+from web_backend.utils.upload_photo import upload_photo
 from web_backend.utils.user import (
-    upload_photo,
     verify_environment_ids,
     verify_repeated_fields,
 )
@@ -52,24 +52,27 @@ router = APIRouter(prefix='/users', tags=['users'])
     },
 )
 def create_user(
+    session: Annotated[Session, Depends(get_session)],
     user_form: Annotated[UserSchema, Depends()],
     current_admin: Annotated[Admin, Depends(get_current_admin)],
-    session: Annotated[Session, Depends(get_session)],
-    file: Annotated[UploadFile | str, File()] = None,
+    photo: Annotated[UploadFile | str, File()] = None,
     environment_ids: Annotated[list[int] | None, Form()] = None,
 ):
-    if not verify_repeated_fields(user_form, session):
-        user_db = User(
-            **user_form.model_dump(), registered_by_admin_id=current_admin.id
-        )
+    verify_repeated_fields(user_form, session)
 
-        session.add(user_db)
-        session.commit()
-        session.refresh(user_db)
+    user_db = User(
+        **user_form.model_dump(),
+        name_unaccent=unidecode(user_form.name),
+        registered_by_admin_id=current_admin.id,
+    )
+    session.add(user_db)
+    session.commit()
+    session.refresh(user_db)
 
-    photo = ''
-    if not isinstance(file, str):
-        photo = file.filename
+    photo_ans = ''
+    if not isinstance(photo, str):
+        photo_ans = photo.filename
+        upload_photo(photo, user_db.id, 'users_photos')
 
     existing_ids, invalid_environment_ids = verify_environment_ids(
         environment_ids, session, user_db
@@ -80,7 +83,7 @@ def create_user(
     return {
         'message': 'User created sucessfully',
         'user_created': user_public,
-        'photo': photo,
+        'photo': photo_ans,
         'environment_ids': existing_ids,
         'invalid_environment_ids': invalid_environment_ids,
     }
@@ -227,15 +230,19 @@ def get_user_enviroments(
 )
 def perfil_photo_upload(
     user_id: int,
-    file: Annotated[UploadFile, File()],
+    session: Annotated[Session, Depends(get_session)],
+    photo: Annotated[UploadFile, File()],
 ):
-    if not upload_photo(file, user_id):
+    user_db = session.scalar(select(User).where(User.id == user_id))
+
+    if not user_db:
         raise HTTPException(
-            status_code=HTTPStatus.CONFLICT,
-            detail=f"File for user '{user_id}' already exists!",
+            status_code=HTTPStatus.NOT_FOUND, detail='User not found!'
         )
+
+    upload_photo(photo, user_db.id, 'users_photos')
 
     return {
         'message': 'Image uploaded successfully!',
-        'filename': file.filename,
+        'filename': photo.filename,
     }
