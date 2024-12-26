@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy import and_, asc, or_, select
+from sqlalchemy import and_, asc, desc, or_, select
 from sqlalchemy.orm import Session
 from unidecode import unidecode
 
@@ -132,10 +132,13 @@ def get_users(
         query = query.where(User.status == filters.status)
 
     if filters.sort_by:
-        if filters.sort_by == UserFilter.SortByOptions.name_opt:
-            query = query.order_by(asc(User.name))
-        elif filters.sort_by == UserFilter.SortByOptions.email_opt:
-            query = query.order_by(asc(User.email))
+        column = getattr(User, filters.sort_by.value.lower())
+        query = query.order_by(
+            desc(column)
+            if filters.sort_order
+            == UserFilter.AscendingOrDescending.descending
+            else asc(column)
+        )
 
     return paginate(session, query)
 
