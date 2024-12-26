@@ -75,7 +75,3 @@ class UserFilter(BaseModel):
     sort_by: Annotated[
         SortByOptions | None, Query(None, description='Sort the result')
     ] = None
-
-
-class PhotoUploaded(Message):
-    filename: str

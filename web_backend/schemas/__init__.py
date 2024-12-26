@@ -1,16 +1,16 @@
 from .admin import AdminDB, AdminProfile, AdminPublic, Admins, AdminSchema
 from .environment import (
     EnvironmentAdded,
+    EnvironmentCreated,
     EnvironmentPublic,
-    Environments,
     EnvironmentSchema,
     EnvironmentUpdated,
 )
 from .message import HTTPExceptionResponse, Message
+from .photo import PhotoUploaded
 from .token import Token, TokenData
 from .user import (
     ExistingUser,
-    PhotoUploaded,
     UserCreated,
     UserFilter,
     UserNameId,
@@ -27,7 +27,6 @@ __all__ = [
     'Admins',
     'AdminSchema',
     'EnvironmentPublic',
-    'Environments',
     'EnvironmentSchema',
     'EnvironmentUpdated',
     'HTTPExceptionResponse',
@@ -44,4 +43,5 @@ __all__ = [
     'UserNameId',
     'UserFilter',
     'PhotoUploaded',
+    'EnvironmentCreated',
 ]

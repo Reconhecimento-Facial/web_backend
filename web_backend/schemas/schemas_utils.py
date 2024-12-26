@@ -28,3 +28,11 @@ def form_body_user_schema(cls):
             new_parameters.append(arg.replace(default=Form(...)))
     cls.__signature__ = cls.__signature__.replace(parameters=new_parameters)
     return cls
+
+
+def form_body_environment_schema(cls):
+    new_parameters = []
+    for arg in cls.__signature__.parameters.values():
+        new_parameters.append(arg.replace(default=Form(...)))
+    cls.__signature__ = cls.__signature__.replace(parameters=new_parameters)
+    return cls

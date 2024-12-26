@@ -3,8 +3,10 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from .message import Message
+from .schemas_utils import form_body_environment_schema
 
 
+@form_body_environment_schema
 class EnvironmentSchema(BaseModel):
     name: str
 
@@ -16,8 +18,8 @@ class EnvironmentPublic(EnvironmentSchema):
     creator_admin_id: int
 
 
-class Environments(BaseModel):
-    environments: list[EnvironmentPublic]
+class EnvironmentCreated(EnvironmentPublic):
+    photo: str
 
 
 class EnvironmentUpdated(Message):
