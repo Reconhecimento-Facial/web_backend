@@ -43,8 +43,8 @@ class EnvironmentAdded(Message):
 
 class EnvironmentFilter(BaseModel):
     class AscendingOrDescending(str, Enum):
-        ascending = 'Ascending'
-        descending = 'Descending'
+        ascending = 'ascending'
+        descending = 'descending'
 
     name: Annotated[
         str | None, Query(None, description='Filter by environment name')

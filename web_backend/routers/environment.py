@@ -86,12 +86,12 @@ def get_environments(
             Environment.name_unaccent.ilike(f'%{unidecode(filters.name)}%')
         )
 
-    if filters.sort_order:
-        if filters.sort_order == filters.AscendingOrDescending.ascending:
-            query = query.order_by(asc(Environment.name))
-        elif filters.sort_order == filters.AscendingOrDescending.descending:
-            query = query.order_by(desc(Environment.name))
-
+    query = query.order_by(
+        desc(Environment.name)
+        if filters.sort_order
+        == EnvironmentFilter.AscendingOrDescending.descending
+        else asc(Environment.name)
+    )
     return paginate(session, query)
 
 
