@@ -131,14 +131,15 @@ def get_users(
     if filters.status:
         query = query.where(User.status == filters.status)
 
+    column = User.name
     if filters.sort_by:
-        column = getattr(User, filters.sort_by.value.lower())
-        query = query.order_by(
-            desc(column)
-            if filters.sort_order
-            == UserFilter.AscendingOrDescending.descending
-            else asc(column)
-        )
+        column = getattr(User, filters.sort_by.value)
+
+    query = query.order_by(
+        desc(column)
+        if filters.sort_order == UserFilter.AscendingOrDescending.descending
+        else asc(column)
+    )
 
     return paginate(session, query)
 

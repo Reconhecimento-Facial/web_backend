@@ -63,12 +63,12 @@ class UserNameId(BaseModel):
 
 class UserFilter(BaseModel):
     class SortByOptions(str, Enum):
-        name_opt = 'Name'
-        email_opt = 'Email'
+        name_opt = 'name'
+        email_opt = 'email'
 
     class AscendingOrDescending(str, Enum):
-        ascending = 'Ascending'
-        descending = 'Descending'
+        ascending = 'ascending'
+        descending = 'descending'
 
     name: Annotated[
         str | None, Query(None, description='Filter by user name')
