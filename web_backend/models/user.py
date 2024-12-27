@@ -10,8 +10,8 @@ from .user_environment import association_table
 
 
 class UserStatus(str, enum.Enum):
-    ativado = 'Ativado'
-    desativado = 'Desativado'
+    active = 'active'
+    inactive = 'inactive'
 
 
 @table_registry.mapped_as_dataclass
@@ -41,7 +41,7 @@ class User:
                 status.value for status in enum_class
             ],
         ),
-        default=UserStatus.ativado,
+        default=UserStatus.active,
     )
     environments: Mapped[Optional[list['Environment']]] = relationship(  # noqa: F821 # type: ignore
         secondary=association_table, back_populates='users', init=False
