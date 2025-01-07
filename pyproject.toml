@@ -24,6 +24,7 @@ taskipy = "^1.14.0"
 ruff = "^0.7.1"
 testcontainers = "^4.8.2"
 freezegun = "^1.5.1"
+faker = "^33.1.0"
 
 [tool.ruff]
 line-length = 79
