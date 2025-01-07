@@ -71,6 +71,28 @@ def create_environment(
     environment_dict['photo'] = photo_ans
     return environment_dict
 
+@router.get(
+    path='/{environment_id}',
+    status_code=HTTPStatus.OK,
+    response_model=EnvironmentPublic,
+    responses={HTTPStatus.NOT_FOUND: {'model': Message}},
+)
+def get_environment_by_id(
+    environment_id: int,
+    current_admin: Annotated[Admin, Depends(get_current_admin)],
+    session: Annotated[Session, Depends(get_session)],
+) -> EnvironmentPublic:
+    environment_db = session.scalar(
+        select(Environment).where(Environment.id == environment_id)
+    )
+
+    if environment_db is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
+        )
+
+    return environment_db
+
 
 @router.get(
     path='/',
@@ -155,7 +177,7 @@ def update_environment(
 
 
 @router.get(
-    path='/{environment_id}',
+    path='/users/{environment_id}',
     status_code=HTTPStatus.OK,
     response_model=Page[UserNameId],
     dependencies=[Depends(get_current_admin)],
