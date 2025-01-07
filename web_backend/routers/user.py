@@ -113,6 +113,27 @@ def delete_user(
 
 
 @router.get(
+    path='/{user_id}',
+    status_code=HTTPStatus.OK,
+    response_model=UserPublic,
+    responses={HTTPStatus.NOT_FOUND: {'model': Message}},
+    dependencies=[Depends(get_current_admin)],
+)
+def get_user_by_id(
+    user_id: int,
+    session: Annotated[Session, Depends(get_session)],
+) -> UserPublic:
+    user_db = session.scalar(select(User).where(User.id == user_id))
+
+    if user_db is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='User not found!'
+        )
+
+    return UserPublic.model_validate(user_db)
+
+
+@router.get(
     path='/',
     status_code=HTTPStatus.OK,
     response_model=Page[UserPublic],
@@ -203,7 +224,7 @@ def patch_user(
 
 
 @router.get(
-    path='/{user_id}',
+    path='/evironments/{user_id}',
     status_code=HTTPStatus.OK,
     response_model=Page[EnvironmentPublic],
     dependencies=[Depends(get_current_admin)],
