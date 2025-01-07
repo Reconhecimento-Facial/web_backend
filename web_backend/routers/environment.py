@@ -36,7 +36,7 @@ router = APIRouter(prefix='/environments', tags=['environments'])
         HTTPStatus.UNAUTHORIZED: {'model': Message},
     },
 )
-def create_Environment(
+def create_environment(
     current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
     environment: Annotated[EnvironmentSchema, Depends()],
@@ -53,7 +53,9 @@ def create_Environment(
         )
 
     environment_db = Environment(
-        name=environment.name, creator_admin_id=current_admin.id
+        name=environment.name,
+        name_unaccent=unidecode(environment.name),
+        creator_admin_id=current_admin.id
     )
 
     session.add(environment_db)
@@ -101,7 +103,7 @@ def get_environments(
     response_model=Message,
     responses={HTTPStatus.NOT_FOUND: {'model': Message}},
 )
-def delete_Environment(
+def delete_environment(
     environment_id: int,
     current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
@@ -126,7 +128,7 @@ def delete_Environment(
     status_code=HTTPStatus.OK,
     response_model=EnvironmentUpdated,
 )
-def update_Environment(
+def update_environment(
     environment_id: int,
     new_environment: EnvironmentSchema,
     current_admin: Annotated[Admin, Depends(get_current_admin)],
@@ -142,6 +144,7 @@ def update_Environment(
         )
 
     environment_db.name = new_environment.name
+    environment_db.name_unaccent = unidecode(new_environment.name)
     environment_db.updated_at = func.now()
     session.commit()
 
