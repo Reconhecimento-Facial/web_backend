@@ -55,7 +55,7 @@ def create_environment(
     environment_db = Environment(
         name=environment.name,
         name_unaccent=unidecode(environment.name),
-        creator_admin_id=current_admin.id
+        creator_admin_id=current_admin.id,
     )
 
     session.add(environment_db)
@@ -70,6 +70,7 @@ def create_environment(
     environment_dict = asdict(environment_db)
     environment_dict['photo'] = photo_ans
     return environment_dict
+
 
 @router.get(
     path='/{environment_id}',

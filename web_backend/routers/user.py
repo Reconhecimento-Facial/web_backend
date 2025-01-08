@@ -218,6 +218,9 @@ def patch_user(
     for key, value in user_schema.model_dump(exclude_unset=True).items():
         setattr(user_db, key, value)
 
+    if user_schema.name:
+        user_db.name_unaccent = unidecode(user_schema.name)
+
     session.commit()
     session.refresh(user_db)
     return {'message': 'User updated sucessfully', 'user_updated': user_db}
