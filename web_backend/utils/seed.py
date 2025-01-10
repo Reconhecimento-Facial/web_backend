@@ -18,7 +18,7 @@ def create_users(
     how_many_users: int,
     admin: Admin,
     environments: list[Environment],
-    session: Session
+    session: Session,
 ) -> None:
     user_status = ['active', 'inactive']
 
