@@ -41,7 +41,8 @@ def verify_environment_ids(
     Args:
         environment_ids (list[int] | None): List of environment IDs to verify.
         session (Session): SQLAlchemy session object.
-        user_db (User): User database object to which environments will be added.
+        user_db (User): User database object to which environments will be
+        added.
 
     Returns:
         tuple[list[int], list[int]]: A tuple containing two lists:

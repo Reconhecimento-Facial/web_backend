@@ -4,6 +4,7 @@ from .environment import (
     EnvironmentCreated,
     EnvironmentFilter,
     EnvironmentPublic,
+    EnvironmentPublicWithPhotoURL,
     EnvironmentSchema,
     EnvironmentUpdated,
 )
@@ -46,4 +47,5 @@ __all__ = [
     'PhotoUploaded',
     'EnvironmentCreated',
     'EnvironmentFilter',
+    'EnvironmentPublicWithPhotoURL',
 ]

@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi_pagination import add_pagination
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -18,6 +19,16 @@ from web_backend.schemas import ExistingUser, Message
 
 app = FastAPI()
 add_pagination(app)
+app.mount(
+    '/environments_photos',
+    StaticFiles(directory='uploads/environments_photos'),
+    name='environments_photos',
+)
+app.mount(
+    '/users_photos',
+    StaticFiles(directory='uploads/users_photos'),
+    name='users_photos',
+)
 
 origins = [
     'http://localhost:3000',

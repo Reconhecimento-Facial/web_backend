@@ -15,6 +15,7 @@ from web_backend.schemas import (
     EnvironmentCreated,
     EnvironmentFilter,
     EnvironmentPublic,
+    EnvironmentPublicWithPhotoURL,
     EnvironmentSchema,
     EnvironmentUpdated,
     Message,
@@ -22,6 +23,7 @@ from web_backend.schemas import (
     UserNameId,
 )
 from web_backend.security import get_current_admin
+from web_backend.utils.photo_url import photo_url
 from web_backend.utils.upload_photo import upload_photo
 
 router = APIRouter(prefix='/environments', tags=['environments'])
@@ -75,14 +77,14 @@ def create_environment(
 @router.get(
     path='/{environment_id}',
     status_code=HTTPStatus.OK,
-    response_model=EnvironmentPublic,
+    response_model=EnvironmentPublicWithPhotoURL,
     responses={HTTPStatus.NOT_FOUND: {'model': Message}},
+    dependencies=[Depends(get_current_admin)],
 )
 def get_environment_by_id(
     environment_id: int,
-    current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
-) -> EnvironmentPublic:
+) -> EnvironmentPublicWithPhotoURL:
     environment_db = session.scalar(
         select(Environment).where(Environment.id == environment_id)
     )
@@ -92,6 +94,8 @@ def get_environment_by_id(
             status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
         )
 
+    photo = photo_url(environment_db.id, 'environments_photos')
+    environment_db.photo = photo
     return environment_db
 
 
@@ -121,7 +125,7 @@ def get_environments(
 
 
 @router.delete(
-    path='/{Environment_id}',
+    path='/{environment_id}',
     status_code=HTTPStatus.OK,
     response_model=Message,
     responses={HTTPStatus.NOT_FOUND: {'model': Message}},

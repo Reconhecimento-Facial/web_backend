@@ -21,6 +21,10 @@ class EnvironmentPublic(EnvironmentSchema):
     creator_admin_id: int
 
 
+class EnvironmentPublicWithPhotoURL(EnvironmentPublic):
+    photo: str
+
+
 class EnvironmentCreated(EnvironmentPublic):
     photo: str
 
