@@ -7,9 +7,8 @@ def photo_url(id: int, dir_name: str) -> str:
     photo_path = f'{photo_path}/{id}.*'
 
     files = glob.glob(photo_path)
+    file_url = ''
     if files:
-        file_name = Path(files[0]).name
-    else:
-        file_name = ''
+        file_url = '/' + dir_name + '/' + Path(files[0]).name
 
-    return f'/{dir_name}/{file_name}'
+    return file_url
