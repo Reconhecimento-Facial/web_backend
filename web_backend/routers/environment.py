@@ -1,7 +1,7 @@
 from dataclasses import asdict
 from http import HTTPStatus
 from typing import Annotated
-
+from fastapi import Request
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -23,7 +23,7 @@ from web_backend.schemas import (
     UserNameId,
 )
 from web_backend.security import get_current_admin
-from web_backend.utils.photo_url import photo_url
+from web_backend.utils.file_path import file_path
 from web_backend.utils.upload_photo import upload_photo
 
 router = APIRouter(prefix='/environments', tags=['environments'])
@@ -83,6 +83,7 @@ def create_environment(
 )
 def get_environment_by_id(
     environment_id: int,
+    request: Request,
     session: Annotated[Session, Depends(get_session)],
 ) -> EnvironmentPublicWithPhotoURL:
     environment_db = session.scalar(
@@ -93,9 +94,9 @@ def get_environment_by_id(
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
         )
-
-    photo = photo_url(environment_db.id, 'environments_photos')
-    environment_db.photo = photo
+    
+    file = file_path(environment_db.id, 'environments_photos')
+    environment_db.photo_url = str(request.base_url) + file
     return environment_db
 
 

@@ -22,7 +22,7 @@ class EnvironmentPublic(EnvironmentSchema):
 
 
 class EnvironmentPublicWithPhotoURL(EnvironmentPublic):
-    photo: str
+    photo_url: str
 
 
 class EnvironmentCreated(EnvironmentPublic):
