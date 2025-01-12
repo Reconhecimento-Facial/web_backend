@@ -33,7 +33,7 @@ def upgrade() -> None:
     op.execute("DROP TYPE userstatus")
 
     op.execute("ALTER TYPE userstatus_new RENAME TO userstatus")
-    op.alter_column('users', 'status_new', new_column_name='status')
+    op.alter_column('users', 'status_new', new_column_name='status', nullable=False)
     # ### end Alembic commands ###
 
 
@@ -52,5 +52,5 @@ def downgrade() -> None:
     op.execute("DROP TYPE userstatus")
     
     op.execute("ALTER TYPE userstatus_new RENAME TO userstatus")
-    op.alter_column('users', 'status_new', new_column_name='status')
+    op.alter_column('users', 'status_new', new_column_name='status', nullable=False)
     # ### end Alembic commands ###

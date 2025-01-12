@@ -1,4 +1,5 @@
 from .admin import AdminDB, AdminProfile, AdminPublic, Admins, AdminSchema
+from .device import DeviceSchema
 from .environment import (
     EnvironmentAdded,
     EnvironmentCreated,
@@ -48,4 +49,5 @@ __all__ = [
     'EnvironmentCreated',
     'EnvironmentFilter',
     'EnvironmentPublicWithPhotoURL',
+    'DeviceSchema',
 ]

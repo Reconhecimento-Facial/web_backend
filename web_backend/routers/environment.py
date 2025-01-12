@@ -1,8 +1,15 @@
 from dataclasses import asdict
 from http import HTTPStatus
 from typing import Annotated
-from fastapi import Request
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    HTTPException,
+    Request,
+    UploadFile,
+)
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import asc, desc, func, select
@@ -94,7 +101,7 @@ def get_environment_by_id(
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
         )
-    
+
     file = file_path(environment_db.id, 'environments_photos')
     environment_db.photo_url = str(request.base_url) + file
     return environment_db
