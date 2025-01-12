@@ -1,7 +1,9 @@
 from http import HTTPStatus
-from typing import Annotated
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -46,3 +48,23 @@ def create_device(
     session.refresh(device)
 
     return device
+
+
+@router.get(
+    path='/',
+    status_code=HTTPStatus.OK,
+    response_model=Page[DeviceSchema],
+    dependencies=[Depends(get_current_admin)],
+)
+def get_devices(
+    session: Annotated[Session, Depends(get_session)],
+    serial_number: Optional[str] = Query(
+        None, description='Filter by serial number'
+    ),
+) -> Page[DeviceSchema]:
+    query = select(Device)
+
+    if serial_number:
+        query = query.where(Device.serial_number.like(f'%{serial_number}%'))
+
+    return paginate(session, query)
