@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from web_backend.database import get_session
-from web_backend.models import Admin, Environment, User
+from web_backend.models import Environment, User
 from web_backend.schemas import (
     EnvironmentAdded,
     Message,
@@ -18,12 +18,13 @@ router = APIRouter(prefix='/users_environments', tags=['users_evironments'])
 
 @router.post(
     '/{user_id}/{environment_id}',
+    status_code=HTTPStatus.OK,
     response_model=EnvironmentAdded,
+    dependencies=[Depends(get_current_admin)],
 )
 def add_environment_permission(
     user_id: int,
     environment_id: int,
-    current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
 ) -> EnvironmentAdded:
     user_db = session.scalar(select(User).where(User.id == user_id))
@@ -60,7 +61,9 @@ def add_environment_permission(
 
 @router.delete(
     path='{user_id}/{environment_id}',
+    status_code=HTTPStatus.OK,
     response_model=Message,
+    dependencies=[Depends(get_current_admin)],
 )
 def remove_environment_permission(
     user_id: int,
