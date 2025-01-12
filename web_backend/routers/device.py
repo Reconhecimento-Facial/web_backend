@@ -98,7 +98,7 @@ def delete_device(
     path='/',
     status_code=HTTPStatus.OK,
     response_model=DeviceSchema,
-    dependencies=[Depends(get_current_admin)]
+    dependencies=[Depends(get_current_admin)],
 )
 def update_device(
     id: UUID,
