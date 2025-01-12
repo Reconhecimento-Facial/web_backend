@@ -11,6 +11,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from web_backend.routers import (
     admin,
     auth,
+    device,
     environment,
     environment_user,
     user,
@@ -47,6 +48,7 @@ app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(environment.router)
 app.include_router(environment_user.router)
+app.include_router(device.router)
 
 
 @app.exception_handler(StarletteHTTPException)
