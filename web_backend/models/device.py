@@ -22,3 +22,4 @@ class Device:
     environment: Mapped['Environment'] = relationship(  # noqa: F821  # type: ignore
         back_populates='devices', single_parent=True
     )
+    creator_admin_id: Mapped[int] = mapped_column(ForeignKey('admins.id'))

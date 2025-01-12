@@ -25,6 +25,8 @@ def upgrade() -> None:
         sa.Column('id', sa.Uuid(), nullable=False),
         sa.Column('serial_number', sa.String(), nullable=False),
         sa.Column('environment_id', sa.Integer(), nullable=False),
+        sa.Column('creator_admin_id', sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(['creator_admin_id'], ['admins.id'], ),
         sa.ForeignKeyConstraint(['environment_id'], ['environments.id'], ),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('environment_id'),
