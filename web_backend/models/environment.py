@@ -25,7 +25,9 @@ class Environment:
     users: Mapped[Optional[list['User']]] = relationship(  # noqa: F821  # type: ignore
         secondary=association_table, back_populates='environments', init=False
     )
-
+    devices: Mapped[list['Device']] = relationship(  # noqa: F821  # type: ignore
+        back_populates='environment'
+    )
     __table_args__ = (
         Index(
             'idx_environments_name_gin_trgm',
