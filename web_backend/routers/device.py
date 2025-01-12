@@ -75,7 +75,7 @@ def get_devices(
     path='/',
     status_code=HTTPStatus.OK,
     response_model=Message,
-    dependencies=[Depends(get_current_admin)]
+    dependencies=[Depends(get_current_admin)],
 )
 def delete_device(
     session: Annotated[Session, Depends(get_session)],
@@ -92,3 +92,45 @@ def delete_device(
     session.commit()
 
     return {'message': 'Device deleted successfully'}
+
+
+@router.put(
+    path='/',
+    status_code=HTTPStatus.OK,
+    response_model=DeviceSchema,
+    dependencies=[Depends(get_current_admin)]
+)
+def update_device(
+    id: UUID,
+    session: Annotated[Session, Depends(get_session)],
+    serial_number: Optional[str] = None,
+    environment_id: Optional[int] = None,
+) -> DeviceSchema:
+    device = session.scalar(select(Device).where(Device.id == id))
+
+    if device is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='device not found'
+        )
+
+    if serial_number:
+        device.serial_number = serial_number
+
+    if environment_id:
+        environment = session.scalar(
+            select(Environment).where(Environment.id == environment_id)
+        )
+
+        if environment is None:
+            raise HTTPException(
+                status_code=HTTPStatus.NOT_FOUND,
+                detail='Environment not found',
+            )
+
+        device.environment = environment
+        device.environment_id = environment.id
+
+    session.commit()
+    session.refresh(device)
+
+    return device
