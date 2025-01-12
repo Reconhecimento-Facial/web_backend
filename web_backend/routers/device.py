@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from typing import Annotated, Optional
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi_pagination import Page
@@ -68,3 +69,26 @@ def get_devices(
         query = query.where(Device.serial_number.like(f'%{serial_number}%'))
 
     return paginate(session, query)
+
+
+@router.delete(
+    path='/',
+    status_code=HTTPStatus.OK,
+    response_model=Message,
+    dependencies=[Depends(get_current_admin)]
+)
+def delete_device(
+    session: Annotated[Session, Depends(get_session)],
+    id: UUID,
+) -> Message:
+    device = session.scalar(select(Device).where(Device.id == id))
+
+    if device is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='device not found'
+        )
+
+    session.delete(device)
+    session.commit()
+
+    return {'message': 'Device deleted successfully'}
