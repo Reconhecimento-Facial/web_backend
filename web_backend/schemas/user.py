@@ -41,6 +41,10 @@ class UserPublic(UserSchema):
         from_attributes = True
 
 
+class UserPublicWithUrl(UserPublic):
+    photo_url: str
+
+
 class UserCreated(Message):
     user_created: UserPublic
     photo: str
