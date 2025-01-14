@@ -30,7 +30,12 @@ class EnvironmentCreated(EnvironmentPublic):
 
 
 class EnvironmentUpdated(Message):
-    environment_updated: EnvironmentPublic
+    class EnvironmentPublicUpdated(EnvironmentPublic):
+        photo_url: str
+    
+    environment_updated: EnvironmentPublicUpdated
+    
+
 
     class Config:
         from_attributes = True
