@@ -103,7 +103,10 @@ def get_environment_by_id(
         )
 
     file = file_path(environment_db.id, 'environments_photos')
-    environment_db.photo_url = str(request.base_url) + file
+    environment_db.photo_url = ''
+    if file:
+        environment_db.photo_url = str(request.base_url) + file
+
     return environment_db
 
 
