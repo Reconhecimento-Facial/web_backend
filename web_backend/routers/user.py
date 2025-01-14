@@ -70,7 +70,7 @@ def create_user(
     session.refresh(user_db)
 
     photo_ans = ''
-    
+
     if not isinstance(photo, str):
         photo_ans = photo.filename
         upload_photo(photo, user_db.id, 'users_photos')

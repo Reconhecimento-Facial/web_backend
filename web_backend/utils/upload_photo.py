@@ -1,8 +1,7 @@
 import shutil
-from http import HTTPStatus
 from pathlib import Path
 
-from fastapi import HTTPException, UploadFile
+from fastapi import UploadFile
 
 
 def upload_photo(file: UploadFile, id: int, dir_name: str) -> None:

@@ -189,10 +189,9 @@ def update_environment(
     if not isinstance(photo, str):
         photo_ans = photo.filename
         upload_photo(photo, environment_db.id, 'environments_photos')
-    
+
     environment_dict = asdict(environment_db)
     environment_dict['photo'] = photo_ans
-    
 
     return {
         'message': 'Environment updated successfully!',
