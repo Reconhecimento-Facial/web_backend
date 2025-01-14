@@ -70,6 +70,7 @@ def create_user(
     session.refresh(user_db)
 
     photo_ans = ''
+    
     if not isinstance(photo, str):
         photo_ans = photo.filename
         upload_photo(photo, user_db.id, 'users_photos')
@@ -223,7 +224,7 @@ def patch_user(
 
     session.commit()
     session.refresh(user_db)
-    return {'message': 'User updated sucessfully', 'user_updated': user_db}
+    return {'message': 'User updated successfully', 'user_updated': user_db}
 
 
 @router.get(

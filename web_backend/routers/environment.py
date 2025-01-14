@@ -165,15 +165,16 @@ def delete_environment(
 )
 def update_environment(
     environment_id: int,
-    new_environment: EnvironmentSchema,
     current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
+    new_environment: Annotated[EnvironmentSchema, Depends()],
+    photo: Annotated[UploadFile | str, File()] = None,
 ) -> EnvironmentUpdated:
     environment_db = session.scalar(
         select(Environment).where(Environment.id == environment_id)
     )
 
-    if environment_id is None:
+    if environment_db is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
         )
@@ -182,6 +183,16 @@ def update_environment(
     environment_db.name_unaccent = unidecode(new_environment.name)
     environment_db.updated_at = func.now()
     session.commit()
+    session.refresh(environment_db)
+
+    photo_ans = ''
+    if not isinstance(photo, str):
+        photo_ans = photo.filename
+        upload_photo(photo, environment_db.id, 'environments_photos')
+    
+    environment_dict = asdict(environment_db)
+    environment_dict['photo'] = photo_ans
+    
 
     return {
         'message': 'Environment updated successfully!',
