@@ -32,6 +32,7 @@ from web_backend.schemas import (
 from web_backend.security import get_current_admin
 from web_backend.utils.file_path import file_path
 from web_backend.utils.upload_photo import upload_photo
+from web_backend.utils.file_path import file_path
 
 router = APIRouter(prefix='/environments', tags=['environments'])
 
@@ -168,6 +169,7 @@ def delete_environment(
 )
 def update_environment(
     environment_id: int,
+    request: Request,
     current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
     new_environment: Annotated[EnvironmentSchema, Depends()],
@@ -184,21 +186,21 @@ def update_environment(
 
     environment_db.name = new_environment.name
     environment_db.name_unaccent = unidecode(new_environment.name)
-    environment_db.updated_at = func.now()
     session.commit()
     session.refresh(environment_db)
 
     photo_ans = ''
     if not isinstance(photo, str):
-        photo_ans = photo.filename
         upload_photo(photo, environment_db.id, 'environments_photos')
+        photo_ans = file_path(environment_db.id, 'environments_photos')
+        photo_ans = str(request.base_url) +  photo_ans
 
-    environment_dict = asdict(environment_db)
-    environment_dict['photo'] = photo_ans
+    environment_dict = environment_db.as_dict()
+    environment_dict['photo_url'] = photo_ans
 
     return {
         'message': 'Environment updated successfully!',
-        'environment_updated': environment_db,
+        'environment_updated': environment_dict,
     }
 
 
