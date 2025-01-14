@@ -1,7 +1,15 @@
 from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Request,
+    UploadFile,
+)
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import and_, asc, desc, or_, select
@@ -18,10 +26,12 @@ from web_backend.schemas import (
     UserFilter,
     UserPatch,
     UserPublic,
+    UserPublicWithUrl,
     UserSchema,
     UserUpdated,
 )
 from web_backend.security import get_current_admin
+from web_backend.utils.file_path import file_path
 from web_backend.utils.upload_photo import upload_photo
 from web_backend.utils.user import (
     verify_environment_ids,
@@ -116,14 +126,15 @@ def delete_user(
 @router.get(
     path='/{user_id}',
     status_code=HTTPStatus.OK,
-    response_model=UserPublic,
+    response_model=UserPublicWithUrl,
     responses={HTTPStatus.NOT_FOUND: {'model': Message}},
     dependencies=[Depends(get_current_admin)],
 )
 def get_user_by_id(
     user_id: int,
+    request: Request,
     session: Annotated[Session, Depends(get_session)],
-) -> UserPublic:
+) -> UserPublicWithUrl:
     user_db = session.scalar(select(User).where(User.id == user_id))
 
     if user_db is None:
@@ -131,7 +142,12 @@ def get_user_by_id(
             status_code=HTTPStatus.NOT_FOUND, detail='User not found!'
         )
 
-    return UserPublic.model_validate(user_db)
+    file = file_path(user_db.id, 'users_photos')
+    user_db.photo_url = ''
+    if file:
+        user_db.photo_url = str(request.base_url) + file
+
+    return user_db
 
 
 @router.get(

@@ -19,6 +19,7 @@ from .user import (
     UserNameId,
     UserPatch,
     UserPublic,
+    UserPublicWithUrl,
     UserSchema,
     UserUpdated,
 )
@@ -50,4 +51,5 @@ __all__ = [
     'EnvironmentFilter',
     'EnvironmentPublicWithPhotoURL',
     'DeviceSchema',
+    'UserPublicWithUrl',
 ]
