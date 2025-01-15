@@ -26,7 +26,7 @@ class EnvironmentPublicWithPhotoURL(EnvironmentPublic):
 
 
 class EnvironmentCreated(EnvironmentPublic):
-    photo: str
+    photo_url: str
 
 
 class EnvironmentUpdated(Message):
