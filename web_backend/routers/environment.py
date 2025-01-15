@@ -265,3 +265,28 @@ def environment_photo_upload(
         'message': 'Image uploaded successfully!',
         'photo_url': photo_url,
     }
+
+
+@router.get(
+        path='/devices/{environment_id}',
+        status_code=HTTPStatus.OK,
+        response_model=dict,
+        dependencies=[Depends(get_current_admin)]
+)
+def get_environment_devices(
+    environment_id: int,
+    session: Annotated[Session, Depends(get_session)],
+) -> dict:
+    environment_db = session.scalar(
+        select(Environment).where(Environment.id == environment_id)
+    )
+
+    if environment_db is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='Environment not found'
+        )
+    
+    return {
+        'environmnt_devices': environment_db.as_dict()['devices']
+    }
