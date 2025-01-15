@@ -166,11 +166,11 @@ def delete_environment(
     '/{environment_id}',
     status_code=HTTPStatus.OK,
     response_model=EnvironmentUpdated,
+    dependencies=[Depends(get_current_admin)]
 )
 def update_environment(
     environment_id: int,
     request: Request,
-    current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
     new_environment: Annotated[EnvironmentSchema, Depends()],
     photo: Annotated[UploadFile | str, File()] = None,
