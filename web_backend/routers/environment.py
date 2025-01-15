@@ -1,4 +1,3 @@
-from dataclasses import asdict
 from http import HTTPStatus
 from typing import Annotated
 
@@ -12,7 +11,7 @@ from fastapi import (
 )
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy import asc, desc, func, select
+from sqlalchemy import asc, desc, select
 from sqlalchemy.orm import Session
 from unidecode import unidecode
 
@@ -32,7 +31,6 @@ from web_backend.schemas import (
 from web_backend.security import get_current_admin
 from web_backend.utils.file_path import file_path
 from web_backend.utils.upload_photo import upload_photo
-from web_backend.utils.file_path import file_path
 
 router = APIRouter(prefix='/environments', tags=['environments'])
 
@@ -168,7 +166,7 @@ def delete_environment(
     '/{environment_id}',
     status_code=HTTPStatus.OK,
     response_model=EnvironmentUpdated,
-    dependencies=[Depends(get_current_admin)]
+    dependencies=[Depends(get_current_admin)],
 )
 def update_environment(
     environment_id: int,
@@ -193,10 +191,10 @@ def update_environment(
 
     if not isinstance(photo, str):
         upload_photo(photo, environment_db.id, 'environments_photos')
-    
+
     photo_url = file_path(environment_db.id, 'environments_photos')
     if photo_url:
-        photo_url = str(request.base_url) +  photo_url
+        photo_url = str(request.base_url) + photo_url
 
     environment_dict = environment_db.as_dict()
     environment_dict['photo_url'] = photo_url
@@ -253,13 +251,12 @@ def environment_photo_upload(
 
     if environment_db is None:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail='Environment not found'
+            status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
         )
-    
+
     upload_photo(photo, environment_id, 'environments_photos')
     photo_url = file_path(environment_db.id, 'environments_photos')
-    photo_url = str(request.base_url) +  photo_url
+    photo_url = str(request.base_url) + photo_url
 
     return {
         'message': 'Image uploaded successfully!',
@@ -268,10 +265,10 @@ def environment_photo_upload(
 
 
 @router.get(
-        path='/devices/{environment_id}',
-        status_code=HTTPStatus.OK,
-        response_model=dict,
-        dependencies=[Depends(get_current_admin)]
+    path='/devices/{environment_id}',
+    status_code=HTTPStatus.OK,
+    response_model=dict,
+    dependencies=[Depends(get_current_admin)],
 )
 def get_environment_devices(
     environment_id: int,
@@ -283,10 +280,7 @@ def get_environment_devices(
 
     if environment_db is None:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail='Environment not found'
+            status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
         )
-    
-    return {
-        'environment_devices': environment_db.as_dict()['devices']
-    }
+
+    return {'environment_devices': environment_db.as_dict()['devices']}

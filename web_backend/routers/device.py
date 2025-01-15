@@ -31,12 +31,12 @@ def create_device(
     environment = session.scalar(
         select(Environment).where(Environment.id == environment_id)
     )
-    
+
     if environment is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
         )
-    
+
     device = session.scalar(
         select(Device).where(Device.serial_number == serial_number)
     )
@@ -44,7 +44,7 @@ def create_device(
     if device:
         raise HTTPException(
             status_code=HTTPStatus.CONFLICT,
-            detail='A device with this serial number already exists.'
+            detail='A device with this serial number already exists.',
         )
 
     device = Device(
@@ -150,20 +150,16 @@ def update_device(
     path='/{device_id}',
     status_code=HTTPStatus.OK,
     response_model=DeviceSchema,
-    dependencies=[Depends(get_current_admin)]
+    dependencies=[Depends(get_current_admin)],
 )
 def get_device_by_id(
-    device_id: UUID,
-    session: Annotated[Session, Depends(get_session)]
+    device_id: UUID, session: Annotated[Session, Depends(get_session)]
 ) -> Device:
-    device_db = session.scalar(
-        select(Device).where(Device.id == device_id)
-    )
+    device_db = session.scalar(select(Device).where(Device.id == device_id))
 
     if device_db is None:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail='device not found'
+            status_code=HTTPStatus.NOT_FOUND, detail='device not found'
         )
-    
+
     return device_db

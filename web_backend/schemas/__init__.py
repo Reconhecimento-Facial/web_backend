@@ -21,6 +21,7 @@ from .user import (
     UserPublic,
     UserPublicWithUrl,
     UserSchema,
+    UserSchemaPut,
     UserUpdated,
 )
 
@@ -52,4 +53,5 @@ __all__ = [
     'EnvironmentPublicWithPhotoURL',
     'DeviceSchema',
     'UserPublicWithUrl',
+    'UserSchemaPut',
 ]

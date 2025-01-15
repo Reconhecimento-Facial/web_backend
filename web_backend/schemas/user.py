@@ -8,7 +8,7 @@ from pydantic import BaseModel, EmailStr, Field
 from web_backend.models.user import UserStatus
 
 from .message import Message
-from .schemas_utils import form_body_user_schema
+from .schemas_utils import form_body_user_schema, form_body_user_schema_put
 
 
 @form_body_user_schema
@@ -18,6 +18,17 @@ class UserSchema(BaseModel):
     date_of_birth: date
     cpf: str
     phone_number: str
+
+
+@form_body_user_schema_put
+class UserSchemaPut(BaseModel):
+    id: int
+    name: str
+    email: EmailStr
+    date_of_birth: date
+    cpf: str
+    phone_number: str
+    status: str
 
 
 class UserPatch(BaseModel):
