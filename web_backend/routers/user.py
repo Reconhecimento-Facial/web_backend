@@ -92,7 +92,7 @@ def create_user(
     user_public = UserPublic.model_validate(user_db)
 
     return {
-        'message': 'User created sucessfully',
+        'message': 'User created successfully',
         'user_created': user_public,
         'photo': photo_ans,
         'environment_ids': existing_ids,
@@ -120,7 +120,7 @@ def delete_user(
     session.delete(user_db)
     session.commit()
 
-    return {'message': 'User deleted sucessfully!'}
+    return {'message': 'User deleted successfully!'}
 
 
 @router.get(
@@ -244,12 +244,12 @@ def patch_user(
 
 
 @router.get(
-    path='/evironments/{user_id}',
+    path='/environments/{user_id}',
     status_code=HTTPStatus.OK,
     response_model=Page[EnvironmentPublic],
     dependencies=[Depends(get_current_admin)],
 )
-def get_user_enviroments(
+def get_user_environments(
     user_id: int,
     session: Annotated[Session, Depends(get_session)],
 ) -> Page[EnvironmentPublic]:

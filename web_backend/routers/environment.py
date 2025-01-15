@@ -288,5 +288,5 @@ def get_environment_devices(
         )
     
     return {
-        'environmnt_devices': environment_db.as_dict()['devices']
+        'environment_devices': environment_db.as_dict()['devices']
     }
