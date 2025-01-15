@@ -1,3 +1,4 @@
+from datetime import date
 from http import HTTPStatus
 from typing import Annotated
 
@@ -12,7 +13,7 @@ from fastapi import (
 )
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy import and_, asc, desc, or_, select
+from sqlalchemy import asc, desc, select
 from sqlalchemy.orm import Session
 from unidecode import unidecode
 
@@ -20,21 +21,20 @@ from web_backend.database import get_session
 from web_backend.models import Admin, Environment, User
 from web_backend.schemas import (
     EnvironmentPublic,
-    ExistingUser,
     Message,
     PhotoUploaded,
     UserFilter,
-    UserPatch,
     UserPublic,
     UserPublicWithUrl,
     UserSchema,
-    UserUpdated,
+    UserSchemaPut,
 )
 from web_backend.security import get_current_admin
 from web_backend.utils.file_path import file_path
 from web_backend.utils.upload_photo import upload_photo
 from web_backend.utils.user import (
     verify_environment_ids,
+    verify_environment_ids_put,
     verify_repeated_fields,
 )
 
@@ -182,67 +182,6 @@ def get_users(
     return paginate(session, query)
 
 
-@router.patch(
-    '/{user_id}',
-    status_code=HTTPStatus.OK,
-    response_model=UserUpdated,
-    responses={
-        HTTPStatus.NOT_FOUND: {'model': Message},
-        HTTPStatus.CONFLICT: {'model': ExistingUser},
-    },
-    dependencies=[Depends(get_current_admin)],
-)
-def patch_user(
-    user_id: int,
-    user_schema: UserPatch,
-    session: Annotated[Session, Depends(get_session)],
-) -> UserUpdated:
-    user_db = session.scalar(
-        select(User).where(
-            and_(
-                or_(
-                    User.email == user_schema.email,
-                    User.cpf == user_schema.cpf,
-                    User.phone_number == user_schema.phone_number,
-                ),
-                User.id != user_id,
-            )
-        )
-    )
-
-    if user_db:
-        message = ' already in use!'
-        if user_db.email == user_schema.email:
-            message = 'Email' + message
-        elif user_db.cpf == user_schema.cpf:
-            message = 'CPF' + message
-        elif user_db.phone_number == user_schema.phone_number:
-            message = 'Phone Number' + message
-
-        user_public = UserPublic.model_validate(user_db)
-        raise HTTPException(
-            status_code=HTTPStatus.CONFLICT,
-            detail={'message': message, 'existing_user': user_public},
-        )
-
-    user_db = session.scalar(select(User).where(User.id == user_id))
-
-    if user_db is None:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='User not Found!'
-        )
-
-    for key, value in user_schema.model_dump(exclude_unset=True).items():
-        setattr(user_db, key, value)
-
-    if user_schema.name:
-        user_db.name_unaccent = unidecode(user_schema.name)
-
-    session.commit()
-    session.refresh(user_db)
-    return {'message': 'User updated successfully', 'user_updated': user_db}
-
-
 @router.get(
     path='/environments/{user_id}',
     status_code=HTTPStatus.OK,
@@ -290,4 +229,74 @@ def perfil_photo_upload(
     return {
         'message': 'Image uploaded successfully!',
         'filename': photo.filename,
+    }
+
+
+@router.put(
+    path='/',
+    status_code=HTTPStatus.CREATED,
+    response_model=dict,
+    responses={HTTPStatus.CONFLICT: {'model': Message}},
+    openapi_extra={
+        'requestBody': {
+            'content': {
+                'multipart/form-data': {
+                    'encoding': {
+                        'environment_ids': {
+                            'style': 'form',
+                            'explode': True,
+                        },
+                    },
+                },
+            },
+        },
+    },
+    dependencies=[Depends(get_current_admin)],
+)
+def update_user(
+    session: Annotated[Session, Depends(get_session)],
+    request: Request,
+    user_form: Annotated[UserSchemaPut, Depends()],
+    photo: Annotated[UploadFile | str, File()] = None,
+    environment_ids: Annotated[list[int] | None, Form()] = None,
+):
+    user_db = session.scalar(select(User).where(User.id == user_form.id))
+
+    if user_db is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
+        )
+
+    verify_repeated_fields(user_form, session)
+
+    for field, value in user_form.model_dump(exclude_unset=True).items():
+        if not (
+            value == 'default@default.com'
+            or value == date(1, 1, 1)
+            or not value
+        ):
+            setattr(user_db, field, value)
+
+    session.commit()
+    session.refresh(user_db)
+
+    if not isinstance(photo, str):
+        upload_photo(photo, user_db.id, 'users_photos')
+
+    photo_url = file_path(user_db.id, 'users_photos')
+    if photo_url:
+        photo_url = str(request.base_url) + photo_url
+
+    existing_ids, invalid_environment_ids = verify_environment_ids_put(
+        environment_ids, session, user_db
+    )
+
+    user_public = UserPublic.model_validate(user_db)
+
+    return {
+        'message': 'User updated successfully',
+        'user_created': user_public,
+        'photo_url': photo_url,
+        'environment_ids': existing_ids,
+        'invalid_environment_ids': invalid_environment_ids,
     }
