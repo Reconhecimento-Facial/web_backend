@@ -31,10 +31,20 @@ def create_device(
     environment = session.scalar(
         select(Environment).where(Environment.id == environment_id)
     )
-
+    
     if environment is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
+        )
+    
+    device = session.scalar(
+        select(Device).where(Device.serial_number == serial_number)
+    )
+
+    if device:
+        raise HTTPException(
+            status_code=HTTPStatus.CONFLICT,
+            detail='A device with this serial number already exists.'
         )
 
     device = Device(

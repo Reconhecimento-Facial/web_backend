@@ -25,8 +25,8 @@ class Environment:
     users: Mapped[Optional[list['User']]] = relationship(  # noqa: F821  # type: ignore
         secondary=association_table, back_populates='environments', init=False
     )
-    devices: Mapped[list['Device']] = relationship(  # noqa: F821  # type: ignore
-        back_populates='environment'
+    devices: Mapped[Optional[list['Device']]] = relationship(  # noqa: F821  # type: ignore
+        back_populates='environment', init=False
     )
     __table_args__ = (
         Index(
@@ -36,3 +36,15 @@ class Environment:
             postgresql_ops={'name_unaccent': 'gin_trgm_ops'},
         ),
     )
+
+    def as_dict(self) -> dict:
+        return {
+            'id': self.id,
+            'name': self.name,
+            'name_unaccent': self.name_unaccent,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'creator_admin_id': self.creator_admin_id,
+            'users': [user.id for user in self.users] if self.users else [],
+            'devices': [device.id for device in self.devices] if self.devices else []
+        }

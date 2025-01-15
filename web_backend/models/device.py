@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID, uuid4
 
 from sqlalchemy import ForeignKey
@@ -16,7 +17,7 @@ class Device:
     serial_number: Mapped[str] = mapped_column(
         unique=True, nullable=False, init=True
     )
-    environment_id: Mapped[int] = mapped_column(
+    environment_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey('environments.id'), unique=True
     )
     environment: Mapped['Environment'] = relationship(  # noqa: F821  # type: ignore
