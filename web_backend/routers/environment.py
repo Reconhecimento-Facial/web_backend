@@ -47,6 +47,7 @@ router = APIRouter(prefix='/environments', tags=['environments'])
     },
 )
 def create_environment(
+    request: Request,
     current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
     environment: Annotated[EnvironmentSchema, Depends()],
@@ -72,13 +73,14 @@ def create_environment(
     session.commit()
     session.refresh(environment_db)
 
-    photo_ans = ''
+    photo_url = ''
     if not isinstance(photo, str):
-        photo_ans = photo.filename
         upload_photo(photo, environment_db.id, 'environments_photos')
+        photo_url = file_path(environment_db.id, 'environments_photos')
+        photo_url = str(request.base_url) + photo_url
 
-    environment_dict = asdict(environment_db)
-    environment_dict['photo'] = photo_ans
+    environment_dict = environment_db.as_dict()
+    environment_dict['photo_url'] = photo_url
     return environment_dict
 
 
@@ -189,14 +191,15 @@ def update_environment(
     session.commit()
     session.refresh(environment_db)
 
-    photo_ans = ''
     if not isinstance(photo, str):
         upload_photo(photo, environment_db.id, 'environments_photos')
-        photo_ans = file_path(environment_db.id, 'environments_photos')
-        photo_ans = str(request.base_url) +  photo_ans
+    
+    photo_url = file_path(environment_db.id, 'environments_photos')
+    if photo_url:
+        photo_url = str(request.base_url) +  photo_url
 
     environment_dict = environment_db.as_dict()
-    environment_dict['photo_url'] = photo_ans
+    environment_dict['photo_url'] = photo_url
 
     return {
         'message': 'Environment updated successfully!',
@@ -240,11 +243,25 @@ def get_environment_users(
 )
 def environment_photo_upload(
     environment_id: int,
+    session: Annotated[Session, Depends(get_session)],
+    request: Request,
     photo: Annotated[UploadFile, File()],
-):
+) -> PhotoUploaded:
+    environment_db = session.scalar(
+        select(Environment).where(Environment.id == environment_id)
+    )
+
+    if environment_db is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='Environment not found'
+        )
+    
     upload_photo(photo, environment_id, 'environments_photos')
+    photo_url = file_path(environment_db.id, 'environments_photos')
+    photo_url = str(request.base_url) +  photo_url
 
     return {
         'message': 'Image uploaded successfully!',
-        'filename': photo.filename,
+        'photo_url': photo_url,
     }
