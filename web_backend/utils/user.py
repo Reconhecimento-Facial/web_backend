@@ -67,3 +67,41 @@ def verify_environment_ids(
     session.commit()
 
     return existing_ids, invalid_ids
+
+
+def verify_environment_ids_put(
+    environment_ids: list[int] | None, session: Session, user_db: User
+) -> tuple[list[int], list[int]]:
+    """
+    Verify valid environments and already add them to user.
+
+    Args:
+        environment_ids (list[int] | None): List of environment IDs to verify.
+        session (Session): SQLAlchemy session object.
+        user_db (User): User database object to which environments will be
+        added.
+
+    Returns:
+        tuple[list[int], list[int]]: A tuple containing two lists:
+            - The first list contains the IDs of the valid environments.
+            - The second list contains the IDs of the invalid environments.
+    """
+    if environment_ids is None:
+        return [], []
+
+    existing_environments = session.scalars(
+        select(Environment).where(Environment.id.in_(environment_ids))
+    ).all()
+
+    existing_ids = [env.id for env in existing_environments]
+    invalid_ids = [
+        env_id for env_id in environment_ids if env_id not in existing_ids
+    ]
+
+    for environment in existing_environments:
+        if environment not in user_db.environments:
+            user_db.environments.append(environment)
+
+    session.commit()
+
+    return existing_ids, invalid_ids
