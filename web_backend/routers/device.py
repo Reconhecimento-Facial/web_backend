@@ -144,3 +144,26 @@ def update_device(
     session.refresh(device)
 
     return device
+
+
+@router.get(
+    path='/{device_id}',
+    status_code=HTTPStatus.OK,
+    response_model=DeviceSchema,
+    dependencies=[Depends(get_current_admin)]
+)
+def get_device_by_id(
+    device_id: UUID,
+    session: Annotated[Session, Depends(get_session)]
+) -> Device:
+    device_db = session.scalar(
+        select(Device).where(Device.id == device_id)
+    )
+
+    if device_db is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='device not found'
+        )
+    
+    return device_db

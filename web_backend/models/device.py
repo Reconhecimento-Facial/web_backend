@@ -18,7 +18,7 @@ class Device:
         unique=True, nullable=False, init=True
     )
     environment_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey('environments.id'), unique=True
+        ForeignKey('environments.id')
     )
     environment: Mapped['Environment'] = relationship(  # noqa: F821  # type: ignore
         back_populates='devices', single_parent=True
