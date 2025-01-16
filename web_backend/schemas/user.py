@@ -22,7 +22,6 @@ class UserSchema(BaseModel):
 
 @form_body_user_schema_put
 class UserSchemaPut(BaseModel):
-    id: int
     name: str
     email: EmailStr
     date_of_birth: date
