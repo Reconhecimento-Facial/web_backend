@@ -14,7 +14,9 @@ def relate_devices_to_environment(
     Take a list of devices_ids and relate the
     valid ones to the specified environment.
     """
-
+    if not devices_ids:
+        return ['']
+    
     devices_to_relate = session.scalars(
         select(Device).where(Device.id.in_(devices_ids))
     ).all()
