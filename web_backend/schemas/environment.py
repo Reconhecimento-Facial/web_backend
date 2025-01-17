@@ -34,6 +34,7 @@ class EnvironmentUpdated(Message):
         photo_url: str
 
     environment_updated: EnvironmentPublicUpdated
+    devices_serial_numbers: list[str] | None
 
     class Config:
         from_attributes = True
