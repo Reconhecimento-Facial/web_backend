@@ -9,10 +9,12 @@ def relate_devices_to_environment(
     session: Session,
     environment_db: Environment,
     devices_ids: list[UUID] | None = None,
-) -> list[str]:
+) -> list[Device]:
     """
     Take a list of devices_ids and relate the
     valid ones to the specified environment.
+
+    Return a list of added devices.
     """
     if not devices_ids:
         return ['']
@@ -24,4 +26,4 @@ def relate_devices_to_environment(
     environment_db.devices = devices_to_relate
     session.commit()
 
-    return [device.serial_number for device in devices_to_relate]
+    return devices_to_relate
