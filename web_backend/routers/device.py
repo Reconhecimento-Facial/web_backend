@@ -25,17 +25,20 @@ router = APIRouter(prefix='/devices', tags=['devices'])
 def create_device(
     current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
-    environment_id: int,
     serial_number: str,
+    environment_id: int | None = None,
 ) -> DeviceSchema:
-    environment = session.scalar(
-        select(Environment).where(Environment.id == environment_id)
-    )
-
-    if environment is None:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
+    
+    environment = None
+    if environment_id:
+        environment = session.scalar(
+            select(Environment).where(Environment.id == environment_id)
         )
+
+        if environment is None:
+            raise HTTPException(
+                status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
+            )
 
     device = session.scalar(
         select(Device).where(Device.serial_number == serial_number)
