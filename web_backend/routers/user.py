@@ -233,7 +233,7 @@ def perfil_photo_upload(
 
 
 @router.put(
-    path='/',
+    path='/{user_id}',
     status_code=HTTPStatus.CREATED,
     response_model=dict,
     responses={HTTPStatus.CONFLICT: {'model': Message}},
@@ -253,14 +253,15 @@ def perfil_photo_upload(
     },
     dependencies=[Depends(get_current_admin)],
 )
-def update_user(
+def update_user(  # noqa PLR0913
+    user_id: int,
     session: Annotated[Session, Depends(get_session)],
     request: Request,
     user_form: Annotated[UserSchemaPut, Depends()],
     photo: Annotated[UploadFile | str, File()] = None,
     environment_ids: Annotated[list[int] | None, Form()] = None,
 ):
-    user_db = session.scalar(select(User).where(User.id == user_form.id))
+    user_db = session.scalar(select(User).where(User.id == user_id))
 
     if user_db is None:
         raise HTTPException(

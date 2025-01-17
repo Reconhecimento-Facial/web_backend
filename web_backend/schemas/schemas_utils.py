@@ -6,16 +6,7 @@ from fastapi import Form
 def form_body_user_schema_put(cls):
     new_parameters = []
     for arg in cls.__signature__.parameters.values():
-        if arg.name == 'id':
-            new_parameters.append(
-                arg.replace(
-                    default=Form(
-                        ...,
-                        description='User ID',
-                    ),
-                )
-            )
-        elif arg.name == 'phone_number':
+        if arg.name == 'phone_number':
             new_parameters.append(
                 arg.replace(
                     default=Form(
