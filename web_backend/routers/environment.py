@@ -89,7 +89,7 @@ def create_environment(  # noqa PLR0913
     session.commit()
     session.refresh(environment_db)
 
-    relate_devices_to_environment(
+    devices = relate_devices_to_environment(
         session, environment_db, devices_ids
     )
 
@@ -101,6 +101,10 @@ def create_environment(  # noqa PLR0913
 
     environment_dict = environment_db.as_dict()
     environment_dict['photo_url'] = photo_url
+    environment_dict['devices'] = [
+        device.as_dict() for device in devices
+    ]
+    
     return environment_dict
 
 
