@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from .message import Message
 from .schemas_utils import form_body_environment_schema
-
+from .device import DeviceSchema
 
 @form_body_environment_schema
 class EnvironmentSchema(BaseModel):
@@ -27,6 +27,7 @@ class EnvironmentPublicWithPhotoURL(EnvironmentPublic):
 
 class EnvironmentCreated(EnvironmentPublic):
     photo_url: str
+    devices: list[DeviceSchema]
 
 
 class EnvironmentUpdated(Message):
