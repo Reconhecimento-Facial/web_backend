@@ -98,9 +98,7 @@ def verify_environment_ids_put(
         env_id for env_id in environment_ids if env_id not in existing_ids
     ]
 
-    for environment in existing_environments:
-        if environment not in user_db.environments:
-            user_db.environments.append(environment)
+    user_db.environments = existing_environments
 
     session.commit()
 
