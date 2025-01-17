@@ -101,9 +101,7 @@ def create_environment(  # noqa PLR0913
 
     environment_dict = environment_db.as_dict()
     environment_dict['photo_url'] = photo_url
-    environment_dict['devices'] = [
-        device.as_dict() for device in devices
-    ]
+    environment_dict['devices'] = devices
     
     return environment_dict
 
@@ -224,13 +222,23 @@ def update_environment(  # noqa PLR0913
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
         )
+    
+    environment_db_repeated_name = session.scalar(
+        select(Environment).where(Environment.name == new_environment.name)
+    )
+
+    if environment_db != environment_db_repeated_name:
+        raise HTTPException(
+            status_code=HTTPStatus.CONFLICT,
+            detail='Environment name already in use',
+        )
 
     environment_db.name = new_environment.name
     environment_db.name_unaccent = unidecode(new_environment.name)
     session.commit()
     session.refresh(environment_db)
 
-    devices_serial_numbers = relate_devices_to_environment(
+    devices = relate_devices_to_environment(
         session, environment_db, devices_ids
     )
 
@@ -247,7 +255,7 @@ def update_environment(  # noqa PLR0913
     return {
         'message': 'Environment updated successfully!',
         'environment_updated': environment_dict,
-        'devices_serial_numbers': devices_serial_numbers,
+        'devices': devices,
     }
 
 
