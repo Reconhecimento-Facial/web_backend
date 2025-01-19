@@ -65,3 +65,10 @@ class EnvironmentFilter(BaseModel):
         AscendingOrDescending | None,
         Query(None, description='Sort in ascending or descending order'),
     ] = None
+
+
+class EnvironmentLog(BaseModel):
+    user_id: int
+    user_name: str
+    allowed_access: bool
+    access_time: datetime
