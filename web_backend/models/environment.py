@@ -28,6 +28,13 @@ class Environment:
     devices: Mapped[Optional[list['Device']]] = relationship(  # noqa: F821  # type: ignore
         back_populates='environment', init=False
     )
+    last_accessed_by_user_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey('users.id'), init=False, nullable=True
+    )
+    last_access_time: Mapped[Optional[datetime]] = mapped_column(
+        init=False, nullable=True, onupdate=func.now()
+    )
+
     __table_args__ = (
         Index(
             'idx_environments_name_gin_trgm',

@@ -5,9 +5,10 @@ from typing import Annotated, Optional
 from fastapi import Query
 from pydantic import BaseModel
 
+from .device import DeviceSchema
 from .message import Message
 from .schemas_utils import form_body_environment_schema
-from .device import DeviceSchema
+
 
 @form_body_environment_schema
 class EnvironmentSchema(BaseModel):
@@ -19,6 +20,8 @@ class EnvironmentPublic(EnvironmentSchema):
     created_at: datetime
     updated_at: datetime
     creator_admin_id: int
+    last_accessed_by_user_id: Optional[int]
+    last_access_time: Optional[datetime]
 
 
 class EnvironmentPublicWithPhotoURL(EnvironmentPublic):
@@ -62,3 +65,10 @@ class EnvironmentFilter(BaseModel):
         AscendingOrDescending | None,
         Query(None, description='Sort in ascending or descending order'),
     ] = None
+
+
+class EnvironmentLog(BaseModel):
+    user_id: int
+    user_name: str
+    allowed_access: bool
+    access_time: datetime

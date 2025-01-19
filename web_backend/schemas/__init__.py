@@ -4,6 +4,7 @@ from .environment import (
     EnvironmentAdded,
     EnvironmentCreated,
     EnvironmentFilter,
+    EnvironmentLog,
     EnvironmentPublic,
     EnvironmentPublicWithPhotoURL,
     EnvironmentSchema,
@@ -54,4 +55,5 @@ __all__ = [
     'DeviceSchema',
     'UserPublicWithUrl',
     'UserSchemaPut',
+    'EnvironmentLog',
 ]

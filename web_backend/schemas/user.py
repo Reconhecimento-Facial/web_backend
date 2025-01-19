@@ -1,7 +1,7 @@
 from datetime import date
 from enum import Enum
-from typing import Annotated
-
+from typing import Annotated, Optional
+from datetime import datetime
 from fastapi import Query
 from pydantic import BaseModel, EmailStr, Field
 
@@ -45,6 +45,8 @@ class UserPatch(BaseModel):
 
 class UserPublic(UserSchema):
     id: int
+    last_accessed_environment_id: Optional[int]
+    last_access_time: Optional[datetime]
     status: UserStatus
 
     class Config:
