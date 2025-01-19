@@ -50,6 +50,9 @@ class User:
     last_accessed_environment_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey('environments.id'), nullable=True, init=False
     )
+    last_accessed_environment_name: Mapped[Optional[str]] = mapped_column(
+        ForeignKey('environments.name'), init=False, nullable=True, 
+    )
     last_access_time: Mapped[Optional[datetime]] = mapped_column(
         init=False, nullable=True, onupdate=func.now()
     )
