@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timedelta
 from random import choice, randint
 
 from faker import Faker
@@ -45,6 +46,7 @@ def create_access_logs(
     users: list[User], environments: list[Environment], session: Session
 ) -> None:
     print('Creating Access Logs...', end='')
+    logs = []
     for user in users:
         for _ in range(randint(1, 5)):
             environment = choice(environments)
@@ -61,8 +63,16 @@ def create_access_logs(
                 environment_name_unaccent=environment.name_unaccent,
                 allowed_access=allowed_access,
             )
-            session.add(new_log)
+            new_log.access_time = datetime.now() - timedelta(
+                days=randint(0, 30),
+                hours=randint(0, 23),
+                minutes=randint(0, 59),
+                seconds=randint(0, 59),
+            )
+            logs.append(new_log)
 
+    logs.sort(key=lambda log: log.access_time)
+    session.add_all(logs)
     session.commit()
     print(' OK')
 
