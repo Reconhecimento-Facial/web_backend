@@ -5,9 +5,10 @@ from typing import Annotated, Optional
 from fastapi import Query
 from pydantic import BaseModel
 
+from .device import DeviceSchema
 from .message import Message
 from .schemas_utils import form_body_environment_schema
-from .device import DeviceSchema
+
 
 @form_body_environment_schema
 class EnvironmentSchema(BaseModel):

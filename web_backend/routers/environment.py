@@ -31,9 +31,9 @@ from web_backend.schemas import (
     UserNameId,
 )
 from web_backend.security import get_current_admin
+from web_backend.utils.environment import relate_devices_to_environment
 from web_backend.utils.file_path import file_path
 from web_backend.utils.upload_photo import upload_photo
-from web_backend.utils.environment import relate_devices_to_environment
 
 router = APIRouter(prefix='/environments', tags=['environments'])
 
@@ -102,7 +102,7 @@ def create_environment(  # noqa PLR0913
     environment_dict = environment_db.as_dict()
     environment_dict['photo_url'] = photo_url
     environment_dict['devices'] = devices if devices else None
-    
+
     return environment_dict
 
 
@@ -222,7 +222,7 @@ def update_environment(  # noqa PLR0913
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
         )
-    
+
     environment_db_repeated_name = session.scalar(
         select(Environment).where(Environment.name == new_environment.name)
     )

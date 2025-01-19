@@ -25,7 +25,6 @@ class Device:
     )
     creator_admin_id: Mapped[int] = mapped_column(ForeignKey('admins.id'))
 
-    
     def as_dict(self) -> dict:
         return {
             'id': str(self.id),

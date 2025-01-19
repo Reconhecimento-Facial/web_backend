@@ -1,8 +1,11 @@
-from .base import table_registry
-from sqlalchemy import ForeignKey, func, Index
-from sqlalchemy.orm import Mapped, mapped_column
+from datetime import datetime
 from uuid import UUID, uuid4
-from datetime import datetime, date
+
+from sqlalchemy import ForeignKey, Index, func
+from sqlalchemy.orm import Mapped, mapped_column
+
+from .base import table_registry
+
 
 @table_registry.mapped_as_dataclass
 class AccessLog:
@@ -18,7 +21,9 @@ class AccessLog:
     user_cpf: Mapped[str] = mapped_column(init=True)
     user_phone_number: Mapped[str] = mapped_column(init=True)
 
-    environment_id: Mapped[int] = mapped_column(ForeignKey('environments.id'), nullable=True)
+    environment_id: Mapped[int] = mapped_column(
+        ForeignKey('environments.id'), nullable=True
+    )
     environment_name: Mapped[str] = mapped_column(init=True)
     environment_name_unaccent: Mapped[str] = mapped_column(init=True)
 

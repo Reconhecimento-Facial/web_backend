@@ -28,7 +28,6 @@ def create_device(
     serial_number: str,
     environment_id: int | None = None,
 ) -> DeviceSchema:
-    
     environment = None
     if environment_id:
         environment = session.scalar(
@@ -37,7 +36,8 @@ def create_device(
 
         if environment is None:
             raise HTTPException(
-                status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
+                status_code=HTTPStatus.NOT_FOUND,
+                detail='Environment not found',
             )
 
     device = session.scalar(

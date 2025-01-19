@@ -1,11 +1,12 @@
-from random import randint, choice
 import time
+from random import choice, randint
+
 from faker import Faker
 from sqlalchemy import create_engine, delete
 from sqlalchemy.orm import Session
 from unidecode import unidecode
 
-from web_backend.models import Admin, Environment, User, AccessLog, Device
+from web_backend.models import AccessLog, Admin, Device, Environment, User
 from web_backend.models.user_environment import association_table
 from web_backend.security import get_password_hash
 from web_backend.settings import Settings
@@ -14,11 +15,13 @@ faker = Faker('pt_BR')
 engine = create_engine(Settings().DATABASE_URL)
 
 
-
 def create_devices(
-    how_many_devices: int, admin: Admin, environments: list[Environment], session: Session
+    how_many_devices: int,
+    admin: Admin,
+    environments: list[Environment],
+    session: Session,
 ) -> list[Device]:
-    print("Creating Devices...", end='')
+    print('Creating Devices...', end='')
     devices = []
     for _ in range(how_many_devices):
         serial_number = faker.unique.ean13()
