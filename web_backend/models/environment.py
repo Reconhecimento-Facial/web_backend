@@ -29,7 +29,7 @@ class Environment:
         back_populates='environment', init=False
     )
     last_accessed_by_user_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey('users.id'), nullable=True
+        ForeignKey('users.id'), init=False, nullable=True
     )
     last_access_time: Mapped[Optional[datetime]] = mapped_column(
         init=False, nullable=True, onupdate=func.now()
