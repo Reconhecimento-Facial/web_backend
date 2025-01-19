@@ -25,6 +25,7 @@ class AccessLog:
     access_time: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )
+    allowed_access: Mapped[bool] = mapped_column(init=True, nullable=False)
 
     __table_args__ = (
         Index(

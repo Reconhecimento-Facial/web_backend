@@ -33,6 +33,7 @@ def upgrade() -> None:
         sa.Column('environment_name', sa.String(), nullable=False),
         sa.Column('environment_name_unaccent', sa.String(), nullable=False),
         sa.Column('access_time', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+        sa.Column('allowed_access', sa.Boolean(), nullable=False),
         sa.ForeignKeyConstraint(['environment_id'], ['environments.id'], ),
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
         sa.PrimaryKeyConstraint('id')
