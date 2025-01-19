@@ -24,3 +24,12 @@ class Device:
         back_populates='devices', single_parent=True
     )
     creator_admin_id: Mapped[int] = mapped_column(ForeignKey('admins.id'))
+
+    
+    def as_dict(self) -> dict:
+        return {
+            'id': str(self.id),
+            'serial_number': self.serial_number,
+            'environment_id': self.environment_id,
+            'creator_admin_id': self.creator_admin_id,
+        }

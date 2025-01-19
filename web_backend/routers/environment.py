@@ -1,10 +1,12 @@
 from http import HTTPStatus
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import (
     APIRouter,
     Depends,
     File,
+    Form,
     HTTPException,
     Request,
     UploadFile,
@@ -31,6 +33,7 @@ from web_backend.schemas import (
 from web_backend.security import get_current_admin
 from web_backend.utils.file_path import file_path
 from web_backend.utils.upload_photo import upload_photo
+from web_backend.utils.environment import relate_devices_to_environment
 
 router = APIRouter(prefix='/environments', tags=['environments'])
 
@@ -43,13 +46,28 @@ router = APIRouter(prefix='/environments', tags=['environments'])
         HTTPStatus.CONFLICT: {'model': Message},
         HTTPStatus.UNAUTHORIZED: {'model': Message},
     },
+    openapi_extra={
+        'requestBody': {
+            'content': {
+                'multipart/form-data': {
+                    'encoding': {
+                        'devices_ids': {
+                            'style': 'form',
+                            'explode': True,
+                        },
+                    },
+                },
+            },
+        },
+    },
 )
-def create_environment(
+def create_environment(  # noqa PLR0913
     request: Request,
     current_admin: Annotated[Admin, Depends(get_current_admin)],
     session: Annotated[Session, Depends(get_session)],
     environment: Annotated[EnvironmentSchema, Depends()],
     photo: Annotated[UploadFile | str, File()] = None,
+    devices_ids: Annotated[list[UUID] | None, Form()] = None,
 ) -> EnvironmentCreated:
     environment_db = session.scalar(
         select(Environment).where(Environment.name == environment.name)
@@ -71,6 +89,10 @@ def create_environment(
     session.commit()
     session.refresh(environment_db)
 
+    devices = relate_devices_to_environment(
+        session, environment_db, devices_ids
+    )
+
     photo_url = ''
     if not isinstance(photo, str):
         upload_photo(photo, environment_db.id, 'environments_photos')
@@ -79,6 +101,8 @@ def create_environment(
 
     environment_dict = environment_db.as_dict()
     environment_dict['photo_url'] = photo_url
+    environment_dict['devices'] = devices if devices else None
+    
     return environment_dict
 
 
@@ -167,13 +191,28 @@ def delete_environment(
     status_code=HTTPStatus.OK,
     response_model=EnvironmentUpdated,
     dependencies=[Depends(get_current_admin)],
+    openapi_extra={
+        'requestBody': {
+            'content': {
+                'multipart/form-data': {
+                    'encoding': {
+                        'devices_ids': {
+                            'style': 'form',
+                            'explode': True,
+                        },
+                    },
+                },
+            },
+        },
+    },
 )
-def update_environment(
+def update_environment(  # noqa PLR0913
     environment_id: int,
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     new_environment: Annotated[EnvironmentSchema, Depends()],
     photo: Annotated[UploadFile | str, File()] = None,
+    devices_ids: Annotated[list[UUID] | None, Form()] = None,
 ) -> EnvironmentUpdated:
     environment_db = session.scalar(
         select(Environment).where(Environment.id == environment_id)
@@ -183,11 +222,26 @@ def update_environment(
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
         )
+    
+    environment_db_repeated_name = session.scalar(
+        select(Environment).where(Environment.name == new_environment.name)
+    )
+
+    if environment_db_repeated_name:
+        if environment_db != environment_db_repeated_name:
+            raise HTTPException(
+                status_code=HTTPStatus.CONFLICT,
+                detail='Environment name already in use',
+            )
 
     environment_db.name = new_environment.name
     environment_db.name_unaccent = unidecode(new_environment.name)
     session.commit()
     session.refresh(environment_db)
+
+    devices = relate_devices_to_environment(
+        session, environment_db, devices_ids
+    )
 
     if not isinstance(photo, str):
         upload_photo(photo, environment_db.id, 'environments_photos')
@@ -202,6 +256,7 @@ def update_environment(
     return {
         'message': 'Environment updated successfully!',
         'environment_updated': environment_dict,
+        'devices': devices if devices else None,
     }
 
 

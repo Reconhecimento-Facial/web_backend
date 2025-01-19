@@ -1,13 +1,13 @@
 from datetime import datetime
 from enum import Enum
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import Query
 from pydantic import BaseModel
 
 from .message import Message
 from .schemas_utils import form_body_environment_schema
-
+from .device import DeviceSchema
 
 @form_body_environment_schema
 class EnvironmentSchema(BaseModel):
@@ -27,6 +27,7 @@ class EnvironmentPublicWithPhotoURL(EnvironmentPublic):
 
 class EnvironmentCreated(EnvironmentPublic):
     photo_url: str
+    devices: Optional[list[DeviceSchema]]
 
 
 class EnvironmentUpdated(Message):
@@ -34,6 +35,7 @@ class EnvironmentUpdated(Message):
         photo_url: str
 
     environment_updated: EnvironmentPublicUpdated
+    devices: Optional[list[DeviceSchema]]
 
     class Config:
         from_attributes = True
