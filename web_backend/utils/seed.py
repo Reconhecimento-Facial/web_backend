@@ -1,17 +1,41 @@
-from random import randint
+from random import randint, choice
 
 from faker import Faker
 from sqlalchemy import create_engine, delete
 from sqlalchemy.orm import Session
 from unidecode import unidecode
 
-from web_backend.models import Admin, Environment, User
+from web_backend.models import Admin, Environment, User, AccessLog
 from web_backend.models.user_environment import association_table
 from web_backend.security import get_password_hash
 from web_backend.settings import Settings
 
 faker = Faker('pt_BR')
 engine = create_engine(Settings().DATABASE_URL)
+
+
+def create_access_logs(
+    users: list[User], environments: list[Environment], session: Session
+) -> None:
+    for user in users:
+        for _ in range(randint(1, 5)):
+            environment = choice(environments)
+            allowed_access = choice([True, False])
+            new_log = AccessLog(
+                user_id=user.id,
+                user_name=user.name,
+                user_name_unaccent=user.name_unaccent,
+                user_email=user.email,
+                user_cpf=user.cpf,
+                user_phone_number=user.phone_number,
+                environment_id=environment.id,
+                environment_name=environment.name,
+                environment_name_unaccent=environment.name_unaccent,
+                allowed_access=allowed_access,
+            )
+            session.add(new_log)
+
+    session.commit()
 
 
 def create_users(
@@ -22,6 +46,7 @@ def create_users(
 ) -> None:
     user_status = ['active', 'inactive']
 
+    users = []
     for _ in range(how_many_users):
         name = faker.name()
         user_environments = environments[: randint(0, len(environments))]
@@ -39,7 +64,12 @@ def create_users(
         for environment in user_environments:
             new_user.environments.append(environment)
 
+        session.refresh(new_user)
+        users.append(new_user)
+
     session.commit()
+
+    return users
 
 
 def create_environments(admin: Admin, session: Session) -> list[Environment]:
@@ -87,6 +117,7 @@ def create_admin(session: Session) -> Admin:
 
 def delete_records(session: Session) -> None:
     session.execute(delete(association_table))
+    session.execute(delete(AccessLog))
     session.execute(delete(User))
     session.execute(delete(Environment))
     session.execute(delete(Admin))
@@ -98,4 +129,5 @@ if __name__ == '__main__':
         delete_records(session)
         admin = create_admin(session)
         environments = create_environments(admin, session)
-        create_users(200, admin, environments, session)
+        users = create_users(200, admin, environments, session)
+        create_access_logs(users, environments, session)
