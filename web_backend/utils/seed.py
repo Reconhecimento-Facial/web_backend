@@ -47,6 +47,16 @@ def create_access_logs(
 ) -> None:
     print('Creating Access Logs...', end='')
     logs = []
+
+    for environment in environments:
+        environment.last_accessed_by_user_id = choice(users).id
+        environment.last_access_time = datetime.now() - timedelta(
+            days=randint(0, 30),
+            hours=randint(0, 23),
+            minutes=randint(0, 59),
+            seconds=randint(0, 59),
+        )
+
     for user in users:
         for _ in range(randint(1, 5)):
             environment = choice(environments)

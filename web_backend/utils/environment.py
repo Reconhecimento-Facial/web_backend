@@ -1,6 +1,7 @@
+from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from uuid import UUID
 
 from web_backend.models import Device, Environment
 
@@ -18,7 +19,7 @@ def relate_devices_to_environment(
     """
     if not devices_ids:
         return None
-    
+
     devices_to_relate = session.scalars(
         select(Device).where(Device.id.in_(devices_ids))
     ).all()
