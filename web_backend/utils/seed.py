@@ -1,11 +1,11 @@
 from random import randint, choice
-
+import time
 from faker import Faker
 from sqlalchemy import create_engine, delete
 from sqlalchemy.orm import Session
 from unidecode import unidecode
 
-from web_backend.models import Admin, Environment, User, AccessLog
+from web_backend.models import Admin, Environment, User, AccessLog, Device
 from web_backend.models.user_environment import association_table
 from web_backend.security import get_password_hash
 from web_backend.settings import Settings
@@ -14,9 +14,34 @@ faker = Faker('pt_BR')
 engine = create_engine(Settings().DATABASE_URL)
 
 
+
+def create_devices(
+    how_many_devices: int, admin: Admin, environments: list[Environment], session: Session
+) -> list[Device]:
+    print("Creating Devices...", end='')
+    devices = []
+    for _ in range(how_many_devices):
+        serial_number = faker.unique.ean13()
+        environment = choice(environments)
+        new_device = Device(
+            serial_number=serial_number,
+            environment_id=environment.id,
+            environment=environment,
+            creator_admin_id=admin.id,
+        )
+        session.add(new_device)
+        session.commit()
+        session.refresh(new_device)
+        devices.append(new_device)
+
+    print(' OK')
+    return devices
+
+
 def create_access_logs(
     users: list[User], environments: list[Environment], session: Session
 ) -> None:
+    print('Creating Access Logs...', end='')
     for user in users:
         for _ in range(randint(1, 5)):
             environment = choice(environments)
@@ -36,6 +61,7 @@ def create_access_logs(
             session.add(new_log)
 
     session.commit()
+    print(' OK')
 
 
 def create_users(
@@ -43,10 +69,15 @@ def create_users(
     admin: Admin,
     environments: list[Environment],
     session: Session,
-) -> None:
+) -> list[User]:
+    print('Creating Users...')
     user_status = ['active', 'inactive']
 
     users = []
+
+    start_time = time.time()  # Marca o início do processo
+    last_print_time = start_time
+
     for _ in range(how_many_users):
         name = faker.name()
         user_environments = environments[: randint(0, len(environments))]
@@ -60,19 +91,25 @@ def create_users(
             status=user_status[randint(0, 2) % 2],
             registered_by_admin_id=admin.id,
         )
-        session.add(new_user)
         for environment in user_environments:
             new_user.environments.append(environment)
 
+        session.add(new_user)
+        session.commit()
         session.refresh(new_user)
         users.append(new_user)
 
-    session.commit()
+        current_time = time.time()
+        if current_time - last_print_time >= 1:
+            print('.', end='', flush=True)
+            last_print_time = current_time
 
+    print(' OK')
     return users
 
 
 def create_environments(admin: Admin, session: Session) -> list[Environment]:
+    print('Creating Environments...', end='')
     env_names = [
         'Laboratório 1',
         'Laboratório 2',
@@ -94,10 +131,12 @@ def create_environments(admin: Admin, session: Session) -> list[Environment]:
         session.refresh(new_env)
         environments.append(new_env)
 
+    print(' OK')
     return environments
 
 
 def create_admin(session: Session) -> Admin:
+    print('Creating Admin...', end='')
     hashed_password = get_password_hash('adm123')
     admin = Admin(
         name='Admin',
@@ -112,16 +151,20 @@ def create_admin(session: Session) -> Admin:
     session.commit()
     session.refresh(admin)
 
+    print(' OK')
     return admin
 
 
 def delete_records(session: Session) -> None:
+    print('Deleting records...', end='')
     session.execute(delete(association_table))
     session.execute(delete(AccessLog))
+    session.execute(delete(Device))
     session.execute(delete(User))
     session.execute(delete(Environment))
     session.execute(delete(Admin))
     session.commit()
+    print(' OK')
 
 
 if __name__ == '__main__':
@@ -129,5 +172,6 @@ if __name__ == '__main__':
         delete_records(session)
         admin = create_admin(session)
         environments = create_environments(admin, session)
-        users = create_users(200, admin, environments, session)
+        users = create_users(100, admin, environments, session)
         create_access_logs(users, environments, session)
+        devices = create_devices(20, admin, environments, session)
