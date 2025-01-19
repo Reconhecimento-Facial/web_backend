@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import Query
 from pydantic import BaseModel
@@ -27,7 +27,7 @@ class EnvironmentPublicWithPhotoURL(EnvironmentPublic):
 
 class EnvironmentCreated(EnvironmentPublic):
     photo_url: str
-    devices: list[DeviceSchema]
+    devices: Optional[list[DeviceSchema]]
 
 
 class EnvironmentUpdated(Message):
@@ -35,7 +35,7 @@ class EnvironmentUpdated(Message):
         photo_url: str
 
     environment_updated: EnvironmentPublicUpdated
-    devices: list[DeviceSchema] | None
+    devices: Optional[list[DeviceSchema]]
 
     class Config:
         from_attributes = True
