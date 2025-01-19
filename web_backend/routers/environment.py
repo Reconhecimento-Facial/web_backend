@@ -18,10 +18,11 @@ from sqlalchemy.orm import Session
 from unidecode import unidecode
 
 from web_backend.database import get_session
-from web_backend.models import Admin, Environment, User
+from web_backend.models import AccessLog, Admin, Environment, User
 from web_backend.schemas import (
     EnvironmentCreated,
     EnvironmentFilter,
+    EnvironmentLog,
     EnvironmentPublic,
     EnvironmentPublicWithPhotoURL,
     EnvironmentSchema,
@@ -157,6 +158,29 @@ def get_environments(
         == EnvironmentFilter.AscendingOrDescending.descending
         else asc(Environment.name)
     )
+    return paginate(session, query)
+
+
+@router.get(
+    path='/logs/{environment_id}',
+    status_code=HTTPStatus.OK,
+    response_model=Page[EnvironmentLog],
+)
+def get_access_log(
+    environment_id: int,
+    session: Annotated[Session, Depends(get_session)],
+) -> Page[EnvironmentLog]:
+    environment_db = session.scalar(
+        select(Environment).where(Environment.id == environment_id)
+    )
+
+    if not environment_db:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
+        )
+
+    query = select(AccessLog).where(AccessLog.environment_id == environment_id)
+
     return paginate(session, query)
 
 
