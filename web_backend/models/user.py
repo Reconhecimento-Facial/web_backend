@@ -47,6 +47,13 @@ class User:
         secondary=association_table, back_populates='users', init=False
     )
 
+    last_accessed_environment_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey('environments.id'), nullable=True, init=False
+    )
+    last_access_time: Mapped[Optional[datetime]] = mapped_column(
+        init=False, nullable=True, onupdate=func.now()
+    )
+
     __table_args__ = (
         Index(
             'idx_users_name_gin_trgm',
