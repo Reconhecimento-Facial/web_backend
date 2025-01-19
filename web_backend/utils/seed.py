@@ -105,7 +105,7 @@ def create_users(
 
     users = []
 
-    start_time = time.time()  # Marca o início do processo
+    start_time = time.time()
     last_print_time = start_time
 
     for _ in range(how_many_users):
