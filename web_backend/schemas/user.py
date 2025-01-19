@@ -46,6 +46,7 @@ class UserPatch(BaseModel):
 class UserPublic(UserSchema):
     id: int
     last_accessed_environment_id: Optional[int]
+    last_accessed_environment_name: Optional[str]
     last_access_time: Optional[datetime]
     status: UserStatus
 

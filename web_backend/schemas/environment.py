@@ -21,6 +21,7 @@ class EnvironmentPublic(EnvironmentSchema):
     updated_at: datetime
     creator_admin_id: int
     last_accessed_by_user_id: Optional[int]
+    last_accessed_by_user_name: Optional[str]
     last_access_time: Optional[datetime]
 
 
