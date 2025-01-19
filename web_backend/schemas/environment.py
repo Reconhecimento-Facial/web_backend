@@ -19,6 +19,8 @@ class EnvironmentPublic(EnvironmentSchema):
     created_at: datetime
     updated_at: datetime
     creator_admin_id: int
+    last_accessed_by_user_id: Optional[int]
+    last_access_time: Optional[datetime]
 
 
 class EnvironmentPublicWithPhotoURL(EnvironmentPublic):
