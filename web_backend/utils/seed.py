@@ -48,23 +48,7 @@ def create_access_logs(
     print('Creating Access Logs...', end='')
     logs = []
 
-    for environment in environments:
-        environment.last_accessed_by_user_id = choice(users).id
-        environment.last_access_time = datetime.now() - timedelta(
-            days=randint(0, 30),
-            hours=randint(0, 23),
-            minutes=randint(0, 59),
-            seconds=randint(0, 59),
-        )
-
     for user in users:
-        user.last_accessed_environment_id = choice(environments).id
-        user.last_access_time = datetime.now() - timedelta(
-            days=randint(0, 30),
-            hours=randint(0, 23),
-            minutes=randint(0, 59),
-            seconds=randint(0, 59),
-        )
         for _ in range(randint(1, 5)):
             environment = choice(environments)
             allowed_access = choice([True, False])
@@ -86,6 +70,15 @@ def create_access_logs(
                 minutes=randint(0, 59),
                 seconds=randint(0, 59),
             )
+
+            user.last_accessed_environment_id = environment.id
+            user.last_accessed_environment_name = environment.name
+            user.last_access_time = new_log.access_time
+
+            environment.last_accessed_by_user_id = user.id
+            environment.last_accessed_by_user_name = user.name
+            environment.last_access_time = new_log.access_time
+
             logs.append(new_log)
 
     logs.sort(key=lambda log: log.access_time)
