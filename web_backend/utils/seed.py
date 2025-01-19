@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from random import choice, randint
 
 from faker import Faker
-from sqlalchemy import create_engine, delete
+from sqlalchemy import create_engine, delete, text
 from sqlalchemy.orm import Session
 from unidecode import unidecode
 
@@ -58,6 +58,13 @@ def create_access_logs(
         )
 
     for user in users:
+        user.last_accessed_environment_id = choice(environments).id
+        user.last_access_time = datetime.now() - timedelta(
+            days=randint(0, 30),
+            hours=randint(0, 23),
+            minutes=randint(0, 59),
+            seconds=randint(0, 59),
+        )
         for _ in range(randint(1, 5)):
             environment = choice(environments)
             allowed_access = choice([True, False])
@@ -183,6 +190,7 @@ def delete_records(session: Session) -> None:
     session.execute(delete(association_table))
     session.execute(delete(AccessLog))
     session.execute(delete(Device))
+    session.execute(text("UPDATE environments SET last_accessed_by_user_id = NULL"))
     session.execute(delete(User))
     session.execute(delete(Environment))
     session.execute(delete(Admin))
