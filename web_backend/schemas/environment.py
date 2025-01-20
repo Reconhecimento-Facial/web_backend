@@ -35,7 +35,9 @@ class EnvironmentCreated(EnvironmentPublic):
 
 
 class EnvironmentUpdated(Message):
-    class EnvironmentPublicUpdated(EnvironmentPublic):
+    class EnvironmentPublicUpdated(BaseModel):
+        name: str
+        updated_at: datetime
         photo_url: str
 
     environment_updated: EnvironmentPublicUpdated
