@@ -183,7 +183,9 @@ def delete_records(session: Session) -> None:
     session.execute(delete(association_table))
     session.execute(delete(AccessLog))
     session.execute(delete(Device))
-    session.execute(text("UPDATE environments SET last_accessed_by_user_id = NULL"))
+    session.execute(
+        text('UPDATE environments SET last_accessed_by_user_id = NULL')
+    )
     session.execute(delete(User))
     session.execute(delete(Environment))
     session.execute(delete(Admin))
