@@ -247,21 +247,21 @@ def update_environment(  # noqa PLR0913
             status_code=HTTPStatus.NOT_FOUND, detail='Environment not found'
         )
 
-    environment_db_repeated_name = session.scalar(
-        select(Environment).where(Environment.name == new_environment.name)
-    )
+    if new_environment.name:
+        environment_db_repeated_name = session.scalar(
+            select(Environment).where(Environment.name == new_environment.name)
+        )
 
-    if environment_db_repeated_name:
-        if environment_db != environment_db_repeated_name:
-            raise HTTPException(
-                status_code=HTTPStatus.CONFLICT,
-                detail='Environment name already in use',
-            )
-
-    environment_db.name = new_environment.name
-    environment_db.name_unaccent = unidecode(new_environment.name)
-    session.commit()
-    session.refresh(environment_db)
+        if environment_db_repeated_name:
+            if environment_db != environment_db_repeated_name:
+                raise HTTPException(
+                    status_code=HTTPStatus.CONFLICT,
+                    detail='Environment name already in use',
+                )
+        environment_db.name = new_environment.name
+        environment_db.name_unaccent = unidecode(new_environment.name)
+        session.commit()
+        session.refresh(environment_db)
 
     devices = relate_devices_to_environment(
         session, environment_db, devices_ids
