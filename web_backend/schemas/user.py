@@ -1,7 +1,7 @@
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
 from typing import Annotated, Optional
-from datetime import datetime
+
 from fastapi import Query
 from pydantic import BaseModel, EmailStr, Field
 

@@ -32,7 +32,8 @@ class Environment:
         ForeignKey('users.id'), init=False, nullable=True
     )
     last_accessed_by_user_name: Mapped[Optional[str]] = mapped_column(
-        init=False, nullable=True, 
+        init=False,
+        nullable=True,
     )
     last_access_time: Mapped[Optional[datetime]] = mapped_column(
         init=False, nullable=True, onupdate=func.now()
