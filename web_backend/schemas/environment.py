@@ -29,7 +29,11 @@ class EnvironmentPublicWithPhotoURL(EnvironmentPublic):
     photo_url: str
 
 
-class EnvironmentCreated(EnvironmentPublic):
+class EnvironmentCreated(BaseModel):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    creator_admin_id: int
     photo_url: str
     devices: Optional[list[DeviceSchema]]
 
