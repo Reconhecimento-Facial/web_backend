@@ -71,13 +71,14 @@ def create_access_logs(
                 seconds=randint(0, 59),
             )
 
-            user.last_accessed_environment_id = environment.id
-            user.last_accessed_environment_name = environment.name
-            user.last_access_time = new_log.access_time
+            if allowed_access:
+                user.last_accessed_environment_id = environment.id
+                user.last_accessed_environment_name = environment.name
+                user.last_access_time = new_log.access_time
 
-            environment.last_accessed_by_user_id = user.id
-            environment.last_accessed_by_user_name = user.name
-            environment.last_access_time = new_log.access_time
+                environment.last_accessed_by_user_id = user.id
+                environment.last_accessed_by_user_name = user.name
+                environment.last_access_time = new_log.access_time
 
             logs.append(new_log)
 
