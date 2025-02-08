@@ -1,3 +1,5 @@
+from datetime import date
+
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import table_registry
@@ -10,4 +12,8 @@ class Admin:
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     email: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str]
-    super_admin: Mapped[bool] = mapped_column(default=False)
+    date_of_birth: Mapped[date] = mapped_column()
+    cpf: Mapped[str] = mapped_column(unique=True)
+    name: Mapped[str] = mapped_column()
+    phone_number: Mapped[str] = mapped_column(unique=True)
+    super_admin: Mapped[bool] = mapped_column()

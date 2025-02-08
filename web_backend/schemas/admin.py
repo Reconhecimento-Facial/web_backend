@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic import BaseModel, EmailStr
 
 
@@ -18,6 +20,13 @@ class AdminPublic(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class AdminProfile(AdminPublic):
+    date_of_birth: date
+    cpf: str
+    name: str
+    phone_number: str
 
 
 class Admins(BaseModel):

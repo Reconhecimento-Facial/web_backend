@@ -10,6 +10,9 @@ __pycache__/
 # C extensions
 *.so
 
+# vscode settings
+.vscode
+
 # Distribution / packaging
 .Python
 build/
@@ -176,3 +179,5 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/python
 
 # Generated using ignr.py - github.com/Antrikshy/ignr.py
+
+uploads/
