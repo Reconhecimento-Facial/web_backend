@@ -1,6 +1,6 @@
 # Reconhecimento Facial - Backend
 
-Este repositório contém o backend da aplicação de reconhecimento facial, desenvolvido utilizando Docker para facilitar a configuração e execução do ambiente.
+Este repositório contém o backend da aplicação de reconhecimento facial.
 
 ## Pré-requisitos
 
