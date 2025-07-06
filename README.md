@@ -4,9 +4,6 @@ Este repositório contém o backend da aplicação de reconhecimento facial, des
 
 ## Pré-requisitos
 
-Antes de começar, você precisará ter as seguintes ferramentas instaladas em sua máquina:
-
-- [Git](https://git-scm.com)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop)
 
 ## Como rodar a aplicação
